@@ -1,0 +1,67 @@
+<?php
+
+use App\Http\Controllers\AppUnlockController;
+use App\Http\Controllers\BackupController;
+use App\Http\Controllers\BreakEvenController;
+use App\Http\Controllers\BroilerController;
+use App\Http\Controllers\DailyRecordController;
+use App\Http\Controllers\EggSaleController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\FarmSettingController;
+use App\Http\Controllers\FeedDeliveryController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\OtherSaleController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SmartAssistantController;
+use App\Http\Controllers\WorkerAdvanceController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/unlock', [AppUnlockController::class, 'create'])->name('app-lock.create');
+Route::post('/unlock', [AppUnlockController::class, 'store'])->middleware('throttle:5,1')->name('app-lock.store');
+
+Route::middleware('farm.unlocked')->group(function (): void {
+    Route::get('/', [BroilerController::class, 'index'])->name('broiler.index');
+    Route::put('/broiler-pin', [BroilerController::class, 'updatePin'])->name('broiler.pin.update');
+    Route::post('/houses', [BroilerController::class, 'storeHouse'])->name('broiler.houses.store');
+    Route::post('/cycles', [BroilerController::class, 'store'])->name('broiler.store');
+    Route::get('/cycles/{cycle}', [BroilerController::class, 'show'])->name('broiler.show');
+    Route::post('/cycles/{cycle}/entries', [BroilerController::class, 'record'])->name('broiler.entries.store');
+    Route::post('/cycles/{cycle}/close', [BroilerController::class, 'close'])->name('broiler.close');
+
+    Route::get('/layer-daily-records', [DailyRecordController::class, 'index'])->name('daily-records.index');
+    Route::post('/daily-records', [DailyRecordController::class, 'store'])->name('daily-records.store');
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('/finance', [ExpenseController::class, 'index'])->name('finance.index');
+    Route::view('/more', 'more.index')->name('more.index');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/break-even', [BreakEvenController::class, 'index'])->name('break-even.index');
+    Route::get('/smart-assistant', [SmartAssistantController::class, 'index'])->name('smart-assistant.index');
+    Route::post('/smart-assistant', [SmartAssistantController::class, 'store'])->middleware('throttle:farm-assistant')->name('smart-assistant.store');
+    Route::delete('/smart-assistant', [SmartAssistantController::class, 'destroy'])->name('smart-assistant.destroy');
+    Route::get('/egg-sales', [EggSaleController::class, 'index'])->name('egg-sales.index');
+    Route::post('/egg-sales', [EggSaleController::class, 'store'])->name('egg-sales.store');
+    Route::get('/egg-sales/{eggSale}/edit', [EggSaleController::class, 'edit'])->name('egg-sales.edit');
+    Route::put('/egg-sales/{eggSale}', [EggSaleController::class, 'update'])->name('egg-sales.update');
+    Route::delete('/egg-sales/{eggSale}', [EggSaleController::class, 'destroy'])->name('egg-sales.destroy');
+    Route::get('/sales', [OtherSaleController::class, 'index'])->name('sales.index');
+    Route::post('/other-sales', [OtherSaleController::class, 'store'])->name('other-sales.store');
+    Route::get('/other-sales/{otherSale}/edit', [OtherSaleController::class, 'edit'])->name('other-sales.edit');
+    Route::put('/other-sales/{otherSale}', [OtherSaleController::class, 'update'])->name('other-sales.update');
+    Route::delete('/other-sales/{otherSale}', [OtherSaleController::class, 'destroy'])->name('other-sales.destroy');
+    Route::post('/expenses', [ExpenseController::class, 'store'])->name('expenses.store');
+    Route::get('/expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('expenses.edit');
+    Route::put('/expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
+    Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+    Route::get('/feed-deliveries', [FeedDeliveryController::class, 'index'])->name('feed-deliveries.index');
+    Route::post('/feed-deliveries', [FeedDeliveryController::class, 'store'])->name('feed-deliveries.store');
+    Route::get('/feed-deliveries/{feedDelivery}/edit', [FeedDeliveryController::class, 'edit'])->name('feed-deliveries.edit');
+    Route::put('/feed-deliveries/{feedDelivery}', [FeedDeliveryController::class, 'update'])->name('feed-deliveries.update');
+    Route::delete('/feed-deliveries/{feedDelivery}', [FeedDeliveryController::class, 'destroy'])->name('feed-deliveries.destroy');
+    Route::get('/settings', [FarmSettingController::class, 'edit'])->name('farm-settings.edit');
+    Route::put('/settings', [FarmSettingController::class, 'update'])->name('farm-settings.update');
+    Route::resource('worker-advances', WorkerAdvanceController::class)->except(['create', 'show']);
+    Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
+    Route::get('/backups/download', [BackupController::class, 'download'])->name('backups.download');
+    Route::post('/backups/restore', [BackupController::class, 'restore'])->middleware('throttle:3,1')->name('backups.restore');
+    Route::post('/lock', [AppUnlockController::class, 'destroy'])->name('app-lock.destroy');
+});

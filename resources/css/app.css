@@ -1,0 +1,108 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-ios-blue: #087f5b;
+    --color-ios-background: #f2f7f4;
+    --color-ios-green: #34c759;
+    --color-ios-orange: #ff9500;
+    --color-ios-red: #ff3b30;
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    input,
+    textarea,
+    button {
+        font: inherit;
+    }
+}
+
+@layer components {
+    .ios-page-header {
+        @apply flex flex-col gap-1 px-1 pt-2;
+    }
+
+    .ios-eyebrow {
+        @apply text-sm font-semibold text-ios-blue;
+    }
+
+    .ios-large-title {
+        @apply text-[2rem] font-bold leading-tight tracking-tight text-slate-950;
+    }
+
+    .ios-section-title {
+        @apply px-1 text-sm font-semibold text-slate-500;
+    }
+
+    .ios-card {
+        @apply overflow-hidden rounded-[1.35rem] bg-white shadow-sm ring-1 ring-slate-900/5;
+    }
+
+    .ios-form-group {
+        @apply overflow-hidden rounded-[1.35rem] bg-white shadow-sm ring-1 ring-slate-900/5;
+    }
+
+    .ios-form-row {
+        @apply flex flex-col gap-1.5 border-b border-slate-200/80 px-4 py-3 last:border-b-0;
+    }
+
+    .ios-label {
+        @apply text-[0.8rem] font-semibold text-slate-500;
+    }
+
+    .ios-input {
+        @apply w-full appearance-none border-0 bg-transparent p-0 text-[1.05rem] text-slate-950 outline-none placeholder:text-slate-300 focus:ring-0;
+    }
+
+    .ios-input-error {
+        @apply text-ios-red;
+    }
+
+    .ios-error {
+        @apply text-xs font-medium text-ios-red;
+    }
+
+    .ios-primary-button {
+        @apply min-h-13 w-full rounded-2xl bg-ios-blue px-5 py-3 text-[1.05rem] font-semibold text-white shadow-sm transition active:scale-[0.98] active:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200;
+    }
+
+    .ios-status {
+        @apply rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700 ring-1 ring-green-200/80;
+    }
+
+    .ios-tab-bar {
+        padding-bottom: env(safe-area-inset-bottom);
+        @apply fixed inset-x-0 bottom-0 z-50 border-t border-slate-300/70 bg-white/85 shadow-[0_-4px_20px_rgba(15,23,42,0.06)] backdrop-blur-xl;
+    }
+
+    .ios-tab {
+        @apply flex min-h-16 flex-col items-center justify-center gap-0.5 text-[0.68rem] font-semibold transition active:scale-95;
+    }
+
+    .ios-quick-add-dialog {
+        width: min(calc(100% - 1.5rem), 30rem);
+        margin: auto auto max(0.75rem, env(safe-area-inset-bottom));
+        @apply max-h-[calc(100dvh-2rem)] overflow-visible border-0 bg-transparent p-0 text-slate-950 outline-none;
+    }
+
+    .ios-quick-add-dialog::backdrop {
+        background: rgb(15 23 42 / 45%);
+        backdrop-filter: blur(4px);
+    }
+
+    .ios-action-sheet {
+        @apply overflow-hidden rounded-[1.35rem] bg-white/95 shadow-2xl ring-1 ring-black/5 backdrop-blur-xl;
+    }
+
+    .ios-action-row {
+        @apply flex min-h-15 items-center gap-3 border-b border-slate-200/80 px-4 py-3 text-start text-base font-semibold last:border-b-0 active:bg-slate-100;
+    }
+}
