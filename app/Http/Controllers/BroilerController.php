@@ -64,7 +64,7 @@ class BroilerController extends Controller
 
     public function show(BroilerCycle $cycle, BroilerLedger $ledger): View
     {
-        return view('broiler.show', ['cycle' => $cycle->load('house'), 'summary' => $ledger->summary($cycle), 'entries' => $cycle->entries()->orderByDesc('recorded_on')->orderByDesc('id')->paginate(30)]);
+        return view('broiler.show', ['vaccinations' => $cycle->vaccinations()->orderBy('due_at')->orderBy('id')->get(), 'cycle' => $cycle->load('house'), 'summary' => $ledger->summary($cycle), 'entries' => $cycle->entries()->orderByDesc('recorded_on')->orderByDesc('id')->paginate(30)]);
     }
 
     public function record(StoreBroilerEntryRequest $request, BroilerCycle $cycle, BroilerLedger $ledger): RedirectResponse

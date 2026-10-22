@@ -40,24 +40,26 @@ class BroilerTest extends TestCase
         $this->assertDatabaseCount('broiler_cycles', 1);
     }
 
-    public function test_daily_feed_cost_and_mortality_are_recorded_once(): void
+    public function test_daily_consumption_and_mortality_are_recorded_once_without_recharging_feed(): void
     {
         $cycle = BroilerCycle::factory()->create();
-        $payload = ['kind' => 'daily', 'recorded_on' => today()->toDateString(), 'birds' => 10, 'feed_kg' => 100.5, 'unit_price' => 2, 'amount' => 99999];
+        BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'feed_delivery', 'feed_kg' => 100.5, 'amount' => 201]);
+        $payload = ['kind' => 'daily', 'recorded_on' => today()->toDateString(), 'birds' => 10, 'feed_sacks' => 2.01, 'unit_price' => 2, 'amount' => 99999];
         $this->post(route('broiler.entries.store', $cycle), $payload)->assertSessionHasNoErrors()->assertRedirect();
-        $this->assertDatabaseHas('broiler_entries', ['broiler_cycle_id' => $cycle->id, 'amount' => 201, 'birds' => 10]);
+        $this->assertDatabaseHas('broiler_entries', ['broiler_cycle_id' => $cycle->id, 'kind' => 'daily', 'amount' => 0, 'birds' => 10]);
         $this->post(route('broiler.entries.store', $cycle), $payload)->assertSessionHasErrors('recorded_on');
-        $this->assertDatabaseCount('broiler_entries', 1);
+        $this->assertDatabaseCount('broiler_entries', 2);
     }
 
     public function test_calculates_partial_sales_fcr_and_profit_without_double_counting(): void
     {
         $cycle = BroilerCycle::factory()->create(['initial_birds' => 100, 'chick_cost' => 100]);
         foreach ([
-            ['kind' => 'daily', 'birds' => 10, 'feed_kg' => 180, 'unit_price' => 1],
+            ['kind' => 'feed_delivery', 'weight_tons' => 0.18, 'price_per_ton' => 1000, 'shipping_cost' => 0, 'feed_type' => 'بادئ'],
+            ['kind' => 'daily', 'birds' => 10, 'feed_sacks' => 3.6, 'unit_price' => 1],
             ['kind' => 'weight', 'birds' => 10, 'weight_kg' => 20],
             ['kind' => 'medicine', 'description' => 'تحصين', 'amount' => 10],
-            ['kind' => 'expense', 'description' => 'كهرباء', 'amount' => 20],
+            ['kind' => 'expense', 'category' => 'other', 'description' => 'كهرباء', 'amount' => 20],
             ['kind' => 'sale', 'birds' => 40, 'weight_kg' => 80, 'unit_price' => 5, 'paid' => 300],
         ] as $entry) {
             $this->post(route('broiler.entries.store', $cycle), $entry + ['recorded_on' => today()->toDateString()])->assertSessionHasNoErrors();
@@ -76,7 +78,7 @@ class BroilerTest extends TestCase
     {
         $cycle = BroilerCycle::factory()->create(['initial_birds' => 10]);
         $this->post(route('broiler.entries.store', $cycle), ['kind' => 'sale', 'recorded_on' => today()->toDateString(), 'birds' => 11, 'weight_kg' => 20, 'unit_price' => 5, 'paid' => 0])->assertSessionHasErrors('birds');
-        $this->post(route('broiler.entries.store', $cycle), ['kind' => 'daily', 'recorded_on' => today()->toDateString(), 'birds' => 11, 'feed_kg' => 1, 'unit_price' => 1])->assertSessionHasErrors('birds');
+        $this->post(route('broiler.entries.store', $cycle), ['kind' => 'daily', 'recorded_on' => today()->toDateString(), 'birds' => 11, 'feed_sacks' => 0.02, 'unit_price' => 1])->assertSessionHasErrors('birds');
         $this->assertDatabaseCount('broiler_entries', 0);
     }
 
@@ -84,7 +86,7 @@ class BroilerTest extends TestCase
     {
         $cycle = BroilerCycle::factory()->create();
         foreach ([today()->addDay()->toDateString(), $cycle->started_on->subDay()->toDateString()] as $date) {
-            $this->post(route('broiler.entries.store', $cycle), ['kind' => 'expense', 'recorded_on' => $date, 'description' => 'تكلفة', 'amount' => 10])->assertSessionHasErrors('recorded_on');
+            $this->post(route('broiler.entries.store', $cycle), ['kind' => 'expense', 'category' => 'other', 'recorded_on' => $date, 'description' => 'تكلفة', 'amount' => 10])->assertSessionHasErrors('recorded_on');
         }
         $this->assertDatabaseCount('broiler_entries', 0);
     }
@@ -92,7 +94,7 @@ class BroilerTest extends TestCase
     public function test_rejects_invalid_kind_negative_cost_and_zero_sample(): void
     {
         $cycle = BroilerCycle::factory()->create();
-        foreach ([['kind' => 'unknown'], ['kind' => 'expense', 'description' => 'تكلفة', 'amount' => -1], ['kind' => 'weight', 'birds' => 0, 'weight_kg' => 0]] as $entry) {
+        foreach ([['kind' => 'unknown'], ['kind' => 'expense', 'category' => 'other', 'description' => 'تكلفة', 'amount' => -1], ['kind' => 'weight', 'birds' => 0, 'weight_kg' => 0]] as $entry) {
             $this->post(route('broiler.entries.store', $cycle), $entry + ['recorded_on' => today()->toDateString()])->assertSessionHasErrors();
         }
         $this->assertDatabaseCount('broiler_entries', 0);
@@ -114,7 +116,7 @@ class BroilerTest extends TestCase
         $this->post(route('broiler.entries.store', $cycle), ['kind' => 'sale', 'recorded_on' => today()->toDateString(), 'birds' => 10, 'weight_kg' => 20, 'unit_price' => 2, 'paid' => 40])->assertSessionHasNoErrors();
         $this->post(route('broiler.close', $cycle))->assertSessionHasNoErrors();
         $this->assertNotNull($cycle->fresh()->closed_on);
-        $this->post(route('broiler.entries.store', $cycle), ['kind' => 'expense', 'recorded_on' => today()->toDateString(), 'amount' => 1, 'description' => 'اختبار'])->assertSessionHasErrors('cycle');
+        $this->post(route('broiler.entries.store', $cycle), ['kind' => 'expense', 'category' => 'other', 'recorded_on' => today()->toDateString(), 'amount' => 1, 'description' => 'اختبار'])->assertSessionHasErrors('cycle');
         $this->assertDatabaseCount('broiler_entries', 1);
     }
 
@@ -148,6 +150,21 @@ class BroilerTest extends TestCase
         $this->get('/')->assertRedirect(route('app-lock.create'));
         $this->post(route('app-lock.store'), ['pin' => '5678'])->assertRedirect(route('broiler.index'));
         $this->get('/')->assertOk();
+    }
+
+    public function test_daily_medicines_are_saved_and_escaped_without_adding_expense(): void
+    {
+        $cycle = BroilerCycle::factory()->create();
+        $this->post(route('broiler.entries.store', $cycle), ['kind' => 'daily', 'recorded_on' => today()->toDateString(), 'birds' => 0, 'feed_sacks' => 0, 'medicines' => 'دواء <script>alert(1)</script>'])->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('broiler_entries', ['broiler_cycle_id' => $cycle->id, 'medicines' => 'دواء <script>alert(1)</script>', 'amount' => 0]);
+        $this->get(route('broiler.show', $cycle))->assertSee('الدواء:')->assertSee('&lt;script&gt;', false)->assertDontSee('<script>alert(1)</script>', false);
+    }
+
+    public function test_daily_medicines_reject_overlong_text(): void
+    {
+        $cycle = BroilerCycle::factory()->create();
+        $this->post(route('broiler.entries.store', $cycle), ['kind' => 'daily', 'recorded_on' => today()->toDateString(), 'birds' => 0, 'feed_sacks' => 0, 'medicines' => str_repeat('a', 1001)])->assertSessionHasErrors('medicines');
+        $this->assertDatabaseCount('broiler_entries', 0);
     }
 
     public function test_unknown_cycle_returns_404(): void

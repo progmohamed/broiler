@@ -4,6 +4,7 @@ use App\Http\Controllers\AppUnlockController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BreakEvenController;
 use App\Http\Controllers\BroilerController;
+use App\Http\Controllers\BroilerVaccinationController;
 use App\Http\Controllers\DailyRecordController;
 use App\Http\Controllers\EggSaleController;
 use App\Http\Controllers\ExpenseController;
@@ -20,6 +21,12 @@ Route::get('/unlock', [AppUnlockController::class, 'create'])->name('app-lock.cr
 Route::post('/unlock', [AppUnlockController::class, 'store'])->middleware('throttle:5,1')->name('app-lock.store');
 
 Route::middleware('farm.unlocked')->group(function (): void {
+    Route::get('/vaccination-reminders', [BroilerVaccinationController::class, 'reminders'])->name('broiler.vaccinations.reminders');
+    Route::post('/cycles/{cycle}/vaccinations', [BroilerVaccinationController::class, 'store'])->name('broiler.vaccinations.store');
+    Route::get('/cycles/{cycle}/vaccinations/calendar', [BroilerVaccinationController::class, 'calendar'])->name('broiler.vaccinations.calendar');
+    Route::put('/cycles/{cycle}/vaccinations/{vaccination}', [BroilerVaccinationController::class, 'update'])->whereNumber('vaccination')->name('broiler.vaccinations.update');
+    Route::post('/cycles/{cycle}/vaccinations/{vaccination}/complete', [BroilerVaccinationController::class, 'complete'])->whereNumber('vaccination')->name('broiler.vaccinations.complete');
+    Route::delete('/cycles/{cycle}/vaccinations/{vaccination}', [BroilerVaccinationController::class, 'destroy'])->whereNumber('vaccination')->name('broiler.vaccinations.destroy');
     Route::get('/', [BroilerController::class, 'index'])->name('broiler.index');
     Route::put('/broiler-pin', [BroilerController::class, 'updatePin'])->name('broiler.pin.update');
     Route::post('/houses', [BroilerController::class, 'storeHouse'])->name('broiler.houses.store');

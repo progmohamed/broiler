@@ -1,3 +1,4 @@
+import './broiler-vaccinations';
 import './farm-assistant';
 
 const quickAddDialog = document.querySelector('[data-quick-add-dialog]');

@@ -25,6 +25,11 @@ class BroilerCycle extends Model
         return $this->belongsTo(BroilerHouse::class, 'broiler_house_id');
     }
 
+    public function vaccinations(): HasMany
+    {
+        return $this->hasMany(BroilerVaccination::class);
+    }
+
     public function entries(): HasMany
     {
         return $this->hasMany(BroilerEntry::class);

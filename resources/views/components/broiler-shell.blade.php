@@ -15,5 +15,11 @@
 <main class="mx-auto flex max-w-6xl flex-col gap-6 p-5 pb-16">
 @if(session('status'))<p class="ios-status" role="status">{{ session('status') }}</p>@endif
 @if($errors->any())<div class="rounded-2xl bg-red-50 p-4 text-red-800" role="alert"><p class="font-bold">راجع البيانات التالية</p><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+<section class="ios-card p-4" data-vaccination-alerts data-url="{{ route('broiler.vaccinations.reminders') }}" data-worker-url="{{ asset('broiler-notifications.js') }}">
+    <div class="flex flex-wrap items-center justify-between gap-3"><h2 class="font-bold">تنبيهات التحصينات</h2><button type="button" class="font-semibold text-ios-blue" data-enable-vaccination-notifications>تفعيل إشعارات المتصفح</button></div>
+    <p class="mt-2 text-sm text-slate-500" data-vaccination-notification-status>إشعارات المتصفح تعمل أثناء فتح التطبيق وقد يؤخرها وضع توفير الطاقة. للتذكير والتطبيق مقفول، أضف المواعيد لتقويم الموبايل.</p>
+    <p class="mt-2 text-sm" data-vaccination-connection-status role="status"></p>
+    <ul class="mt-3 flex flex-col gap-2" data-vaccination-reminders aria-live="polite"></ul>
+</section>
 {{ $slot }}
 </main></body></html>
