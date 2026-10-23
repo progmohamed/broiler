@@ -1,6 +1,7 @@
 const panel = document.querySelector('[data-vaccination-alerts]');
 
 if (panel) {
+    const setup = panel.querySelector('[data-vaccination-setup]');
     const button = panel.querySelector('[data-enable-vaccination-notifications]');
     const status = panel.querySelector('[data-vaccination-notification-status]');
     const connection = panel.querySelector('[data-vaccination-connection-status]');
@@ -9,6 +10,12 @@ if (panel) {
     const seen = new Set();
     let busy = false;
     let registrationPromise;
+
+    const syncVisibility = () => {
+        const enabled = supported && Notification.permission === 'granted';
+        setup.hidden = enabled;
+        panel.hidden = enabled && list.children.length === 0 && !connection.textContent;
+    };
 
     const registration = () => {
         registrationPromise ??= navigator.serviceWorker.register(panel.dataset.workerUrl, { scope: '/broiler-notifications/' }).then(async (result) => {
@@ -53,7 +60,7 @@ if (panel) {
             if (!response.ok) throw new Error('Unable to load reminders');
             const { reminders } = await response.json();
             list.replaceChildren();
-            connection.textContent = reminders.length ? '' : 'لا توجد تحصينات مستحقة للتنبيه الآن.';
+            connection.textContent = '';
             for (const reminder of reminders) {
                 const item = document.createElement('li');
                 const link = document.createElement('a');
@@ -62,11 +69,11 @@ if (panel) {
                 link.textContent = `${reminder.overdue ? 'متأخر' : 'اقترب الموعد'}: ${reminder.title} · ${reminder.cycle} · ${reminder.due}`;
                 item.append(link);
                 list.append(item);
-                try { await notify(reminder); } catch { status.textContent = 'تعذر عرض إشعار المتصفح. التنبيهات داخل التطبيق متاحة؛ تحقق من صلاحيات الإشعارات.'; }
+                try { await notify(reminder); } catch { connection.textContent = 'تعذر عرض إشعار المتصفح؛ راجع صلاحيات الإشعارات.'; }
             }
         } catch {
             connection.textContent = 'تعذر تحديث التنبيهات. تحقق من الاتصال؛ سيُعاد المحاولة تلقائيًا.';
-        } finally { busy = false; }
+        } finally { busy = false; syncVisibility(); }
     };
 
     if (!supported) {
@@ -77,12 +84,14 @@ if (panel) {
             try {
                 const permission = await Notification.requestPermission();
                 status.textContent = permission === 'granted'
-                    ? 'إشعارات المتصفح مفعلة أثناء فتح التطبيق. للتنبيه والتطبيق مقفول استخدم تقويم الموبايل.'
+                    ? ''
                     : 'لم يتم السماح بالإشعارات. يمكنك تفعيلها من إعدادات الموقع؛ تنبيهات الصفحة تعمل.';
+                syncVisibility();
                 if (permission === 'granted') await refresh();
             } catch { status.textContent = 'تعذر تفعيل الإشعارات في هذا المتصفح. استخدم تنبيهات الصفحة أو التقويم.'; }
         });
     }
+    syncVisibility();
     refresh();
     setInterval(refresh, 60000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });

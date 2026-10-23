@@ -3,7 +3,15 @@
     <form method="POST" action="{{ route('broiler.entries.store', $cycle) }}">
         @csrf
         <input type="hidden" name="kind" value="feed_delivery">
-        <p class="px-4 pb-3 text-sm text-slate-500">قيمة العلف + تكلفة النقل تُضاف تلقائيًا إلى مصروفات هذه الدورة.</p>
+        <label class="ios-form-row">
+            <span class="ios-label">طريقة الدفع</span>
+            <select class="ios-input" name="payment_status" required>
+                <option value="">اختر طريقة الدفع</option>
+                @foreach(\App\Models\BroilerEntry::PAYMENT_STATUSES as $value => $label)
+                    <option value="{{ $value }}" @selected(old('payment_status') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </label>
         <label class="ios-form-row">
             <span class="ios-label">تاريخ دخول المخزن</span>
             <input class="ios-input" type="date" name="recorded_on" value="{{ old('recorded_on', today()->toDateString()) }}" required>
@@ -13,7 +21,7 @@
             <input class="ios-input" name="feed_type" value="{{ old('feed_type') }}" maxlength="100" required>
         </label>
         <label class="ios-form-row">
-            <span class="ios-label">الكمية بالطن — الطن = 20 شيكارة (50 كجم)</span>
+            <span class="ios-label">الكمية (طن)</span>
             <input class="ios-input" type="number" name="weight_tons" value="{{ old('weight_tons') }}" min="0.001" step="0.001" required>
         </label>
         <label class="ios-form-row">
@@ -36,6 +44,6 @@
             <span class="ios-label">ملاحظات</span>
             <textarea class="ios-input" name="notes" rows="2">{{ old('notes') }}</textarea>
         </label>
-        <div class="p-4"><button class="ios-primary-button">حفظ النقلة وإضافتها للمصروفات</button></div>
+        <div class="p-4"><button class="ios-primary-button">حفظ النقلة</button></div>
     </form>
 </details>

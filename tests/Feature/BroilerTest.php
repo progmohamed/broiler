@@ -43,7 +43,7 @@ class BroilerTest extends TestCase
     public function test_daily_consumption_and_mortality_are_recorded_once_without_recharging_feed(): void
     {
         $cycle = BroilerCycle::factory()->create();
-        BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'feed_delivery', 'feed_kg' => 100.5, 'amount' => 201]);
+        BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'feed_delivery', 'payment_status' => 'cash', 'feed_kg' => 100.5, 'amount' => 201]);
         $payload = ['kind' => 'daily', 'recorded_on' => today()->toDateString(), 'birds' => 10, 'feed_sacks' => 2.01, 'unit_price' => 2, 'amount' => 99999];
         $this->post(route('broiler.entries.store', $cycle), $payload)->assertSessionHasNoErrors()->assertRedirect();
         $this->assertDatabaseHas('broiler_entries', ['broiler_cycle_id' => $cycle->id, 'kind' => 'daily', 'amount' => 0, 'birds' => 10]);
@@ -55,7 +55,7 @@ class BroilerTest extends TestCase
     {
         $cycle = BroilerCycle::factory()->create(['initial_birds' => 100, 'chick_cost' => 100]);
         foreach ([
-            ['kind' => 'feed_delivery', 'weight_tons' => 0.18, 'price_per_ton' => 1000, 'shipping_cost' => 0, 'feed_type' => 'بادئ'],
+            ['kind' => 'feed_delivery', 'payment_status' => 'cash', 'weight_tons' => 0.18, 'price_per_ton' => 1000, 'shipping_cost' => 0, 'feed_type' => 'بادئ'],
             ['kind' => 'daily', 'birds' => 10, 'feed_sacks' => 3.6, 'unit_price' => 1],
             ['kind' => 'weight', 'birds' => 10, 'weight_kg' => 20],
             ['kind' => 'medicine', 'description' => 'تحصين', 'amount' => 10],

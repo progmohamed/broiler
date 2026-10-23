@@ -17,7 +17,7 @@ class BroilerFeedInventoryTest extends TestCase
     {
         $cycle = BroilerCycle::factory()->create(['chick_cost' => 100]);
         $this->post(route('broiler.entries.store', $cycle), $this->delivery(['weight_tons' => 1, 'price_per_ton' => 20000, 'shipping_cost' => 500, 'amount' => 1, 'category' => 'salaries']))->assertSessionHasNoErrors()->assertRedirect(route('broiler.show', $cycle));
-        $this->assertDatabaseHas('broiler_entries', ['broiler_cycle_id' => $cycle->id, 'kind' => 'feed_delivery', 'amount' => 20500, 'category' => 'feed']);
+        $this->assertDatabaseHas('broiler_entries', ['broiler_cycle_id' => $cycle->id, 'kind' => 'feed_delivery', 'payment_status' => 'cash', 'amount' => 20500, 'category' => 'feed']);
         $this->post(route('broiler.entries.store', $cycle), ['kind' => 'daily', 'recorded_on' => today()->toDateString(), 'birds' => 0, 'feed_sacks' => 2, 'amount' => 1000, 'unit_price' => 100])->assertSessionHasNoErrors();
         $summary = app(BroilerLedger::class)->summary($cycle);
         $this->assertSame(900.0, $summary['feed_stock']);
@@ -32,7 +32,7 @@ class BroilerFeedInventoryTest extends TestCase
     {
         $cycle = BroilerCycle::factory()->create();
         $this->post(route('broiler.entries.store', $cycle), $this->delivery(['weight_tons' => 1.25, 'price_per_ton' => 27555.55, 'shipping_cost' => 400, 'feed_kg' => 1, 'unit_price' => 1]))->assertSessionHasNoErrors();
-        $this->assertDatabaseHas('broiler_entries', ['kind' => 'feed_delivery', 'feed_kg' => 1250, 'price_per_ton' => 27555.55, 'amount' => 34844.44]);
+        $this->assertDatabaseHas('broiler_entries', ['kind' => 'feed_delivery', 'payment_status' => 'cash', 'feed_kg' => 1250, 'price_per_ton' => 27555.55, 'amount' => 34844.44]);
         $this->post(route('broiler.entries.store', $cycle), ['kind' => 'daily', 'recorded_on' => today()->toDateString(), 'birds' => 0, 'feed_sacks' => 2.5, 'feed_kg' => 1])->assertSessionHasNoErrors();
         $this->assertDatabaseHas('broiler_entries', ['kind' => 'daily', 'feed_kg' => 125, 'amount' => 0]);
         $this->assertSame(1125.0, app(BroilerLedger::class)->summary($cycle)['feed_stock']);
@@ -59,9 +59,9 @@ class BroilerFeedInventoryTest extends TestCase
     public function test_backdated_consumption_preserves_stock_for_already_recorded_days(): void
     {
         $cycle = BroilerCycle::factory()->create();
-        BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'feed_delivery', 'recorded_on' => today()->subDays(3), 'feed_kg' => 100]);
+        BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'feed_delivery', 'payment_status' => 'cash', 'recorded_on' => today()->subDays(3), 'feed_kg' => 100]);
         BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'daily', 'recorded_on' => today()->subDay(), 'daily_on' => today()->subDay(), 'feed_kg' => 80, 'amount' => 0]);
-        BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'feed_delivery', 'recorded_on' => today(), 'feed_kg' => 100]);
+        BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'feed_delivery', 'payment_status' => 'cash', 'recorded_on' => today(), 'feed_kg' => 100]);
         $this->post(route('broiler.entries.store', $cycle), ['kind' => 'daily', 'recorded_on' => today()->subDays(2)->toDateString(), 'birds' => 0, 'feed_sacks' => 1])->assertSessionHasErrors('feed_sacks');
         $this->assertDatabaseCount('broiler_entries', 3);
     }
@@ -82,6 +82,8 @@ class BroilerFeedInventoryTest extends TestCase
     #[TestWith(['electricity'])]
     #[TestWith(['maintenance'])]
     #[TestWith(['medicines'])]
+    #[TestWith(['bedding'])]
+    #[TestWith(['miscellaneous'])]
     #[TestWith(['other'])]
     public function test_expense_categories_are_saved_and_totaled(string $category): void
     {
@@ -116,6 +118,8 @@ class BroilerFeedInventoryTest extends TestCase
     #[TestWith(['price_per_ton', -1])]
     #[TestWith(['price_per_ton', 1.111])]
     #[TestWith(['shipping_cost', -1])]
+    #[TestWith(['payment_status', null])]
+    #[TestWith(['payment_status', 'invalid'])]
     #[TestWith(['feed_type', ''])]
     public function test_rejects_invalid_delivery_values(string $field, mixed $value): void
     {
@@ -134,6 +138,6 @@ class BroilerFeedInventoryTest extends TestCase
     /** @param array<string, mixed> $overrides @return array<string, mixed> */
     private function delivery(array $overrides = []): array
     {
-        return array_replace(['kind' => 'feed_delivery', 'recorded_on' => today()->toDateString(), 'weight_tons' => 0.1, 'price_per_ton' => 20000, 'shipping_cost' => 0, 'feed_type' => 'بادئ'], $overrides);
+        return array_replace(['kind' => 'feed_delivery', 'payment_status' => 'cash', 'recorded_on' => today()->toDateString(), 'weight_tons' => 0.1, 'price_per_ton' => 20000, 'shipping_cost' => 0, 'feed_type' => 'بادئ'], $overrides);
     }
 }

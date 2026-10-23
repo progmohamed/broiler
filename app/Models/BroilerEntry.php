@@ -13,12 +13,16 @@ class BroilerEntry extends Model
 
     public const TYPES = ['feed_delivery' => 'نقلة علف', 'daily' => 'يومية', 'weight' => 'وزن عينة', 'medicine' => 'دواء', 'sale' => 'بيع طيور', 'expense' => 'مصروف'];
 
-    public const EXPENSE_CATEGORIES = ['disinfection' => 'تطهير', 'heating' => 'تدفئة', 'salaries' => 'مرتبات', 'electricity' => 'كهرباء (فواتير وبنزين)', 'maintenance' => 'صيانات', 'medicines' => 'أدوية', 'other' => 'أخرى'];
+    public const PAYMENT_STATUSES = ['cash' => 'كاش', 'credit' => 'آجل'];
+
+    public const CHICK_COST_CATEGORIES = ['heating' => 'التدفئة', 'bedding' => 'الفرشة', 'salaries' => 'العمالة', 'miscellaneous' => 'النثريات'];
+
+    public const EXPENSE_CATEGORIES = ['disinfection' => 'تطهير', 'heating' => 'تدفئة', 'bedding' => 'نشارة (فرشة)', 'miscellaneous' => 'نثريات', 'salaries' => 'مرتبات', 'electricity' => 'كهرباء (فواتير وبنزين)', 'maintenance' => 'صيانات', 'medicines' => 'أدوية', 'other' => 'أخرى'];
 
     /** @use HasFactory<BroilerEntryFactory> */
     use HasFactory;
 
-    protected $fillable = ['kind', 'recorded_on', 'daily_on', 'birds', 'feed_kg', 'weight_kg', 'unit_price', 'amount', 'paid', 'description', 'notes', 'medicines', 'category', 'feed_type', 'supplier', 'invoice_number', 'shipping_cost', 'price_per_ton'];
+    protected $fillable = ['kind', 'recorded_on', 'daily_on', 'birds', 'feed_kg', 'weight_kg', 'unit_price', 'amount', 'paid', 'description', 'notes', 'medicines', 'category', 'feed_type', 'supplier', 'invoice_number', 'shipping_cost', 'price_per_ton', 'payment_status'];
 
     protected function casts(): array
     {

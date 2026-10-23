@@ -49,6 +49,7 @@ class StoreBroilerEntryRequest extends FormRequest
             $rules['category'] = ['required', Rule::in(array_keys(BroilerEntry::EXPENSE_CATEGORIES))];
         }
         if ($kind === 'feed_delivery') {
+            $rules['payment_status'] = ['required', Rule::in(array_keys(BroilerEntry::PAYMENT_STATUSES))];
             $rules['feed_type'] = ['required', 'string', 'max:100'];
             $rules['supplier'] = ['nullable', 'string', 'max:150'];
             $rules['invoice_number'] = ['nullable', 'string', 'max:100'];
@@ -63,6 +64,6 @@ class StoreBroilerEntryRequest extends FormRequest
 
     public function attributes(): array
     {
-        return ['feed_sacks' => 'عدد شكاير العلف', 'weight_tons' => 'كمية العلف بالطن', 'price_per_ton' => 'سعر الطن', 'medicines' => 'الدواء', 'recorded_on' => 'التاريخ', 'birds' => 'عدد الطيور', 'feed_kg' => 'العلف', 'weight_kg' => 'الوزن', 'unit_price' => 'سعر الكيلو', 'amount' => 'التكلفة', 'paid' => 'المبلغ المحصل', 'description' => 'البيان', 'category' => 'تصنيف المصروف', 'feed_type' => 'نوع العلف', 'shipping_cost' => 'تكلفة النقل', 'supplier' => 'المورد'];
+        return ['payment_status' => 'طريقة الدفع', 'feed_sacks' => 'عدد شكاير العلف', 'weight_tons' => 'كمية العلف بالطن', 'price_per_ton' => 'سعر الطن', 'medicines' => 'الدواء', 'recorded_on' => 'التاريخ', 'birds' => 'عدد الطيور', 'feed_kg' => 'العلف', 'weight_kg' => 'الوزن', 'unit_price' => 'سعر الكيلو', 'amount' => 'التكلفة', 'paid' => 'المبلغ المحصل', 'description' => 'البيان', 'category' => 'تصنيف المصروف', 'feed_type' => 'نوع العلف', 'shipping_cost' => 'تكلفة النقل', 'supplier' => 'المورد'];
     }
 }

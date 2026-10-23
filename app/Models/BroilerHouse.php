@@ -19,6 +19,11 @@ class BroilerHouse extends Model
         return ['capacity' => 'integer'];
     }
 
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(BroilerHouseExpense::class);
+    }
+
     public function cycles(): HasMany
     {
         return $this->hasMany(BroilerCycle::class);

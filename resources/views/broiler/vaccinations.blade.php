@@ -1,9 +1,9 @@
-<section id="vaccinations" class="flex flex-col gap-4">
+<details id="vaccinations" class="ios-card" @if(old('vaccination_form')) open @endif>
+    <summary class="cursor-pointer p-5 text-lg font-bold">جدول تحصينات الدورة <span class="text-sm font-normal text-slate-500">({{ $vaccinations->count() }})</span></summary>
+    <div class="flex flex-col gap-4 px-5 pb-5">
     <div class="flex flex-wrap items-center justify-between gap-3">
-        <h2 class="text-xl font-bold">جدول تحصينات الدورة</h2>
         <a class="font-semibold text-ios-blue" href="{{ route('broiler.vaccinations.calendar', $cycle) }}">تنزيل المواعيد لتقويم الموبايل</a>
     </div>
-    <p class="text-sm text-slate-500">أضف المواعيد حسب برنامج الدورة. تنزيل التقويم يشمل المواعيد غير المنفذة مع تنبيه؛ استورده في تطبيق التقويم وتأكد من تفعيل إشعاراته. الملف نسخة ثابتة، وأي تعديل لاحق هنا يحتاج تحديث الموعد في التقويم أيضًا.</p>
     @forelse($vaccinations as $vaccination)
         <article class="ios-card flex flex-col gap-3 p-5">
             <div class="flex flex-wrap justify-between gap-2"><h3 class="font-bold">{{ $vaccination->name }}</h3><span class="text-sm {{ $vaccination->completed_at ? 'text-emerald-700' : 'text-amber-700' }}">{{ $vaccination->statusLabel() }}</span></div>
@@ -25,4 +25,5 @@
     @if(!$cycle->closed_on)
         <details class="ios-card" @if(old('vaccination_form') === 'new') open @endif><summary class="cursor-pointer p-5 font-bold text-ios-blue">+ إضافة تحصين</summary>@include('broiler.vaccination-form', ['vaccination' => null])</details>
     @endif
-</section>
+    </div>
+</details>

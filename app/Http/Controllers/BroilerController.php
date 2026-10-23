@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\BroilerLedger;
 use App\Http\Requests\StoreBroilerCycleRequest;
 use App\Http\Requests\StoreBroilerEntryRequest;
+use App\Http\Requests\UpdateBroilerCostRequest;
 use App\Models\BroilerCycle;
 use App\Models\BroilerHouse;
 use App\Models\FarmSetting;
@@ -72,6 +73,32 @@ class BroilerController extends Controller
         $ledger->record($cycle, $request->validated());
 
         return to_route('broiler.show', $cycle)->with('status', 'تم حفظ السجل.');
+    }
+
+    public function updateChickCost(UpdateBroilerCostRequest $request, BroilerCycle $cycle): RedirectResponse
+    {
+        DB::transaction(function () use ($request, $cycle): void {
+            BroilerCycle::query()->lockForUpdate()->findOrFail($cycle->id)->update($request->validated());
+        });
+
+        return to_route('broiler.show', $cycle)->with('status', 'تم تعديل ثمن الكتاكيت.');
+    }
+
+    public function updateCost(UpdateBroilerCostRequest $request, BroilerCycle $cycle, int $entry): RedirectResponse
+    {
+        DB::transaction(function () use ($request, $cycle, $entry): void {
+            $cycle = BroilerCycle::query()->lockForUpdate()->findOrFail($cycle->id);
+            $record = $cycle->entries()->lockForUpdate()->findOrFail($entry);
+            abort_unless(in_array($record->kind, ['expense', 'medicine', 'feed_delivery'], true), 404);
+            $data = $request->validated();
+            if ($record->kind === 'feed_delivery') {
+                $data['amount'] = round($record->feed_kg / 1000 * $data['price_per_ton'] + $data['shipping_cost'], 2);
+                $data['unit_price'] = round($data['price_per_ton'] / 1000, 2);
+            }
+            $record->update($data);
+        });
+
+        return to_route('broiler.show', $cycle)->with('status', 'تم تعديل المصروف وتحديث الحسابات.');
     }
 
     public function close(BroilerCycle $cycle, BroilerLedger $ledger): RedirectResponse
