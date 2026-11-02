@@ -95,12 +95,12 @@ class BroilerFeedInventoryTest extends TestCase
         $this->assertSame(1125.50, $summary['costs']);
     }
 
-    public function test_medicine_form_automatically_uses_medicines_category(): void
+    public function test_legacy_medicine_form_automatically_creates_a_medicines_expense(): void
     {
         $cycle = BroilerCycle::factory()->create();
         $this->post(route('broiler.entries.store', $cycle), ['kind' => 'medicine', 'recorded_on' => today()->toDateString(), 'amount' => 50, 'description' => 'تحصين', 'category' => 'salaries'])->assertSessionHasNoErrors();
         $this->assertSame(50.0, app(BroilerLedger::class)->summary($cycle)['expenses']['medicines']);
-        $this->assertDatabaseHas('broiler_entries', ['kind' => 'medicine', 'category' => 'medicines']);
+        $this->assertDatabaseHas('broiler_entries', ['kind' => 'expense', 'category' => 'medicines']);
     }
 
     public function test_rejects_missing_or_unknown_expense_category(): void

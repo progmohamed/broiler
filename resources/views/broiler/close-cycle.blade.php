@@ -1,0 +1,2 @@
+@if(!$cycle->closed_on)<form method="POST" action="{{ route('broiler.close', $cycle) }}" class="ios-card flex flex-col gap-3 p-5">@csrf<h2 class="font-bold">إغلاق الدورة</h2><p class="text-sm text-slate-500">يمكن الإغلاق بعد تصفير عدد الطيور وإكمال التسجيل. بعد الإغلاق تتوقف إضافة السجلات.</p><button class="rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white disabled:opacity-40" @disabled($summary['remaining'] !== 0)>إغلاق الدورة</button></form>@endif
+

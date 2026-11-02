@@ -15,9 +15,9 @@ class BroilerEntry extends Model
 
     public const PAYMENT_STATUSES = ['cash' => 'كاش', 'credit' => 'آجل'];
 
-    public const CHICK_COST_CATEGORIES = ['heating' => 'التدفئة', 'bedding' => 'الفرشة', 'salaries' => 'العمالة', 'miscellaneous' => 'النثريات'];
+    public const EXPENSE_CATEGORIES = ['disinfection' => 'تطهير', 'heating' => 'تدفئة', 'bedding' => 'نشارة (فرشة)', 'miscellaneous' => 'نثريات', 'salaries' => 'مرتبات', 'electricity' => 'كهرباء (فواتير وبنزين)', 'maintenance' => 'صيانات', 'medicines' => 'أدوية', 'vaccinations' => 'تحصينات', 'other' => 'أخرى'];
 
-    public const EXPENSE_CATEGORIES = ['disinfection' => 'تطهير', 'heating' => 'تدفئة', 'bedding' => 'نشارة (فرشة)', 'miscellaneous' => 'نثريات', 'salaries' => 'مرتبات', 'electricity' => 'كهرباء (فواتير وبنزين)', 'maintenance' => 'صيانات', 'medicines' => 'أدوية', 'other' => 'أخرى'];
+    public const CHICK_COST_CATEGORIES = ['chicks' => 'ثمن الكتاكيت', 'feed' => 'العلف والنقل', ...self::EXPENSE_CATEGORIES, 'house' => 'نصيب الدورة من مصروفات العنبر'];
 
     /** @use HasFactory<BroilerEntryFactory> */
     use HasFactory;

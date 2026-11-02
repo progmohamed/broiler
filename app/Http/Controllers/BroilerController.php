@@ -7,6 +7,7 @@ use App\Http\Requests\StoreBroilerCycleRequest;
 use App\Http\Requests\StoreBroilerEntryRequest;
 use App\Http\Requests\UpdateBroilerCostRequest;
 use App\Models\BroilerCycle;
+use App\Models\BroilerEntry;
 use App\Models\BroilerHouse;
 use App\Models\FarmSetting;
 use Illuminate\Contracts\View\View;
@@ -63,16 +64,61 @@ class BroilerController extends Controller
         return to_route('broiler.show', $cycle)->with('status', 'تم بدء الدورة.');
     }
 
-    public function show(BroilerCycle $cycle, BroilerLedger $ledger): View
+    public function show(Request $request, BroilerCycle $cycle, BroilerLedger $ledger): View
     {
-        return view('broiler.show', ['vaccinations' => $cycle->vaccinations()->orderBy('due_at')->orderBy('id')->get(), 'cycle' => $cycle->load('house'), 'summary' => $ledger->summary($cycle), 'entries' => $cycle->entries()->orderByDesc('recorded_on')->orderByDesc('id')->paginate(30)]);
+        $tabs = ['daily' => 'اليوميات', 'feed' => 'العلف', 'costs' => 'المصروفات', 'sales' => 'المبيعات', 'reports' => 'التقارير', 'vaccinations' => 'التحصينات'];
+        $category = $request->query('category', '');
+        if (! is_string($category) || ! in_array($category, ['', 'feed', ...array_keys(BroilerEntry::EXPENSE_CATEGORIES)], true)) {
+            $category = '';
+        }
+        $activeTab = $request->session()->get('cycle_tab', $request->query('tab', 'daily'));
+        if (! is_string($activeTab) || ! array_key_exists($activeTab, $tabs)) {
+            $activeTab = 'daily';
+        }
+        $old = $request->session()->getOldInput();
+        if (isset($old['vaccination_form'])) {
+            $activeTab = 'vaccinations';
+        } elseif (isset($old['cost_entry']) || isset($old['cost_form'])) {
+            $activeTab = isset($old['cost_entry']) && $cycle->entries()->whereKey($old['cost_entry'])->where('kind', 'feed_delivery')->exists() ? 'feed' : 'costs';
+        } elseif (isset($old['kind'])) {
+            $activeTab = match ($old['kind']) {
+                'sale' => 'sales', 'feed_delivery' => 'feed', 'expense', 'medicine' => 'costs', default => 'daily'
+            };
+        }
+        $costQuery = $cycle->entries()->whereIn('kind', $category === 'feed' ? ['feed_delivery'] : ['expense', 'medicine']);
+        if ($category === 'feed') {
+            $costQuery->where('kind', 'feed_delivery');
+        } elseif ($category !== '') {
+            $costQuery->where(function ($query) use ($category): void {
+                $query->where('category', $category);
+                if ($category === 'medicines') {
+                    $query->orWhere('kind', 'medicine');
+                }
+                if ($category === 'other') {
+                    $query->orWhere(fn ($legacy) => $legacy->where('kind', 'expense')->whereNull('category'));
+                }
+            });
+        }
+
+        return view('broiler.show', [
+            'tabs' => $tabs, 'activeTab' => $activeTab, 'category' => $category,
+            'vaccinations' => $cycle->vaccinations()->orderBy('due_at')->orderBy('id')->get(),
+            'cycle' => $cycle->load('house'), 'summary' => $ledger->summary($cycle),
+            'dailyEntries' => $cycle->entries()->whereIn('kind', ['daily', 'weight'])->orderByDesc('recorded_on')->orderByDesc('id')->paginate(15, ['*'], 'daily_page')->appends(['tab' => 'daily']),
+            'costEntries' => $costQuery->orderByDesc('recorded_on')->orderByDesc('id')->paginate(20, ['*'], 'cost_page')->appends(['tab' => 'costs', 'category' => $category]),
+            'feedEntries' => $cycle->entries()->where('kind', 'feed_delivery')->orderByDesc('recorded_on')->orderByDesc('id')->paginate(20, ['*'], 'feed_page')->appends(['tab' => 'feed']),
+            'saleEntries' => $cycle->entries()->where('kind', 'sale')->orderByDesc('recorded_on')->orderByDesc('id')->paginate(20, ['*'], 'sale_page')->appends(['tab' => 'sales']),
+            'entries' => $cycle->entries()->orderByDesc('recorded_on')->orderByDesc('id')->paginate(30)->appends(['tab' => 'reports']),
+        ]);
     }
 
     public function record(StoreBroilerEntryRequest $request, BroilerCycle $cycle, BroilerLedger $ledger): RedirectResponse
     {
         $ledger->record($cycle, $request->validated());
 
-        return to_route('broiler.show', $cycle)->with('status', 'تم حفظ السجل.');
+        return to_route('broiler.show', $cycle)->with('cycle_tab', match ($request->validated('kind')) {
+            'sale' => 'sales', 'feed_delivery' => 'feed', 'expense', 'medicine' => 'costs', default => 'daily'
+        })->with('status', 'تم حفظ السجل.');
     }
 
     public function updateChickCost(UpdateBroilerCostRequest $request, BroilerCycle $cycle): RedirectResponse
@@ -81,7 +127,7 @@ class BroilerController extends Controller
             BroilerCycle::query()->lockForUpdate()->findOrFail($cycle->id)->update($request->validated());
         });
 
-        return to_route('broiler.show', $cycle)->with('status', 'تم تعديل ثمن الكتاكيت.');
+        return to_route('broiler.show', $cycle)->with('cycle_tab', 'costs')->with('status', 'تم تعديل ثمن الكتاكيت.');
     }
 
     public function updateCost(UpdateBroilerCostRequest $request, BroilerCycle $cycle, int $entry): RedirectResponse
@@ -98,7 +144,7 @@ class BroilerController extends Controller
             $record->update($data);
         });
 
-        return to_route('broiler.show', $cycle)->with('status', 'تم تعديل المصروف وتحديث الحسابات.');
+        return to_route('broiler.show', $cycle)->with('cycle_tab', $cycle->entries()->whereKey($entry)->value('kind') === 'feed_delivery' ? 'feed' : 'costs')->with('status', 'تم تعديل المصروف وتحديث الحسابات.');
     }
 
     public function close(BroilerCycle $cycle, BroilerLedger $ledger): RedirectResponse

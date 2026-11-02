@@ -1,3 +1,4 @@
+import './broiler-cycle';
 import './broiler-vaccinations';
 import './farm-assistant';
 

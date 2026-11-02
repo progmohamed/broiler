@@ -171,4 +171,19 @@ class BroilerTest extends TestCase
     {
         $this->get('/cycles/999')->assertNotFound();
     }
+
+    public function test_home_restores_the_form_section_after_validation_errors(): void
+    {
+        $url = route('broiler.index');
+        $this->from($url)->post(route('broiler.houses.store'), ['home_tab' => 'houses', 'name' => 'عنبر جديد'])
+            ->assertSessionHasErrors('capacity');
+        $this->get($url)->assertSee('data-initial-tab="houses"', false)->assertSee('عنبر جديد');
+        $this->assertDatabaseCount('broiler_houses', 0);
+    }
+
+    public function test_home_accepts_section_links_and_handles_invalid_sections(): void
+    {
+        $this->get(route('broiler.index', ['tab' => 'new']))->assertSee('data-initial-tab="new"', false);
+        $this->get(route('broiler.index', ['tab' => ['invalid']]))->assertOk()->assertSee('data-initial-tab="cycles"', false);
+    }
 }

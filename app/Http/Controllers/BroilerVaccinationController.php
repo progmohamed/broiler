@@ -21,7 +21,7 @@ class BroilerVaccinationController extends Controller
             $cycle->vaccinations()->create($this->schedule($request, $cycle));
         });
 
-        return to_route('broiler.show', $cycle)->with('status', 'تم إضافة التحصين والتنبيه إلى جدول الدورة.');
+        return to_route('broiler.show', $cycle)->with('cycle_tab', 'vaccinations')->with('status', 'تم إضافة التحصين والتنبيه إلى جدول الدورة.');
     }
 
     public function update(SaveBroilerVaccinationRequest $request, BroilerCycle $cycle, int $vaccination): RedirectResponse
@@ -35,7 +35,7 @@ class BroilerVaccinationController extends Controller
             $record->update($this->schedule($request, $cycle));
         });
 
-        return to_route('broiler.show', $cycle)->with('status', 'تم تحديث موعد التحصين والتنبيه.');
+        return to_route('broiler.show', $cycle)->with('cycle_tab', 'vaccinations')->with('status', 'تم تحديث موعد التحصين والتنبيه.');
     }
 
     public function complete(BroilerCycle $cycle, int $vaccination): RedirectResponse
@@ -48,7 +48,7 @@ class BroilerVaccinationController extends Controller
             }
         });
 
-        return to_route('broiler.show', $cycle)->with('status', 'تم تسجيل تنفيذ التحصين وإيقاف تنبيهه.');
+        return to_route('broiler.show', $cycle)->with('cycle_tab', 'vaccinations')->with('status', 'تم تسجيل تنفيذ التحصين وإيقاف تنبيهه.');
     }
 
     public function destroy(BroilerCycle $cycle, int $vaccination): RedirectResponse
@@ -61,7 +61,7 @@ class BroilerVaccinationController extends Controller
             $record->delete();
         });
 
-        return to_route('broiler.show', $cycle)->with('status', 'تم حذف الموعد.');
+        return to_route('broiler.show', $cycle)->with('cycle_tab', 'vaccinations')->with('status', 'تم حذف الموعد.');
     }
 
     public function reminders(): JsonResponse

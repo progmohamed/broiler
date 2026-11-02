@@ -9,7 +9,7 @@ use Illuminate\Validation\ValidationException;
 
 class BroilerLedger
 {
-    /** @return array{remaining: int, deaths: int, sold: int, feed: float, revenue: float, costs: float, profit: float, receivable: float, mortality: float, fcr: ?float, average_weight: ?float, weight_date: ?string, feed_received: float, feed_stock: float, expenses: array<string, float>, chick_costs: array<string, float>, chick_cost_total: float, house_costs: float} */
+    /** @return array{remaining: int, deaths: int, sold: int, feed: float, revenue: float, costs: float, profit: float, receivable: float, mortality: float, fcr: ?float, average_weight: ?float, weight_date: ?string, feed_received: float, feed_stock: float, expenses: array<string, float>, chick_cost_amounts: array<string, float>, chick_costs: array<string, float>, chick_cost_total: float, house_costs: float} */
     public function summary(BroilerCycle $cycle): array
     {
         $entries = $cycle->entries()->orderBy('recorded_on')->orderBy('id')->get();
@@ -34,18 +34,20 @@ class BroilerLedger
                 $expenses[$category] = round($expenses[$category] + (float) $entry->amount, 2);
             }
         }
-        $chickCosts = [];
-        foreach (BroilerEntry::CHICK_COST_CATEGORIES as $category => $label) {
-            $chickCosts[$category] = $expenses[$category] / $cycle->initial_birds;
-        }
         $biomass = (float) $sales->sum('weight_kg') + $remaining * ($average ?? 0);
         $revenue = (float) $sales->sum('amount');
         $houseCosts = round($cycle->house->expenses()->get()->sum(fn ($expense): float => app(BroilerHouseCosts::class)->allocation($expense, $cycle)), 2);
         $costs = round($houseCosts + (float) $cycle->chick_cost + $entries->where('kind', '!=', 'sale')->sum('amount'), 2);
 
+        $chickCostAmounts = ['chicks' => (float) $cycle->chick_cost, ...$expenses, 'house' => $houseCosts];
+        $chickCosts = [];
+        foreach (BroilerEntry::CHICK_COST_CATEGORIES as $category => $label) {
+            $chickCosts[$category] = $chickCostAmounts[$category] / $cycle->initial_birds;
+        }
+
         return [
             'house_costs' => $houseCosts,
-            'chick_costs' => $chickCosts, 'chick_cost_total' => array_sum($chickCosts),
+            'chick_cost_amounts' => $chickCostAmounts, 'chick_costs' => $chickCosts, 'chick_cost_total' => array_sum($chickCostAmounts) / $cycle->initial_birds,
             'feed_received' => $received, 'feed_stock' => round($received - $feed, 3), 'expenses' => $expenses,
             'remaining' => $remaining, 'deaths' => $deaths, 'sold' => $sold, 'feed' => $feed,
             'revenue' => $revenue, 'costs' => $costs, 'profit' => round($revenue - $costs, 2),
@@ -94,6 +96,7 @@ class BroilerLedger
                 $data['category'] = 'feed';
             }
             if ($data['kind'] === 'medicine') {
+                $data['kind'] = 'expense';
                 $data['category'] = 'medicines';
             }
             if ($data['kind'] === 'sale') {
