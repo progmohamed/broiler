@@ -14,24 +14,37 @@ class BroilerCycleReportTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
-    public function test_report_uses_initial_chicks_and_all_recorded_costs_in_this_cycle(): void
+    public function test_report_deducts_mortality_but_keeps_sold_birds_in_cost_basis(): void
     {
         $cycle = BroilerCycle::factory()->create(['initial_birds' => 1000]);
         foreach (['heating' => 1000, 'bedding' => 500, 'salaries' => 2000, 'miscellaneous' => 250, 'other' => 900] as $category => $amount) {
             $this->post(route('broiler.entries.store', $cycle), ['kind' => 'expense', 'recorded_on' => today()->toDateString(), 'category' => $category, 'amount' => $amount, 'description' => 'مصروف'])->assertSessionHasNoErrors();
         }
         BroilerEntry::factory()->create(['kind' => 'expense', 'category' => 'heating', 'amount' => 99999]);
-        BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'daily', 'birds' => 100, 'amount' => 0]);
+        BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'daily', 'birds' => 200, 'amount' => 0]);
         BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'sale', 'birds' => 100, 'amount' => 10000]);
         $summary = app(BroilerLedger::class)->summary($cycle);
-        $this->assertSame(1.0, $summary['chick_costs']['heating']);
-        $this->assertSame(0.5, $summary['chick_costs']['bedding']);
-        $this->assertSame(2.0, $summary['chick_costs']['salaries']);
-        $this->assertSame(0.25, $summary['chick_costs']['miscellaneous']);
-        $this->assertSame(0.9, $summary['chick_costs']['other']);
-        $this->assertSame(1.0, $summary['chick_costs']['chicks']);
-        $this->assertSame(5.65, $summary['chick_cost_total']);
-        $this->get(route('broiler.show', $cycle))->assertOk()->assertSee('تقرير نصيب الكتكوت')->assertSee('5.650')->assertSee('1,000 كتكوت عند بداية الدورة');
+        $this->assertSame(1.25, $summary['chick_costs']['heating']);
+        $this->assertSame(0.625, $summary['chick_costs']['bedding']);
+        $this->assertSame(2.5, $summary['chick_costs']['salaries']);
+        $this->assertSame(0.3125, $summary['chick_costs']['miscellaneous']);
+        $this->assertSame(1.125, $summary['chick_costs']['other']);
+        $this->assertSame(1.25, $summary['chick_costs']['chicks']);
+        $this->assertSame(7.0625, $summary['chick_cost_total']);
+        $this->get(route('broiler.show', $cycle))->assertOk()->assertSee('تقرير نصيب الكتكوت')->assertSee('7.063')->assertSee('800 كتكوت بعد خصم النافق');
+    }
+
+    public function test_report_has_no_per_chick_cost_when_all_birds_have_died(): void
+    {
+        $cycle = BroilerCycle::factory()->create(['initial_birds' => 100, 'chick_cost' => 1000]);
+        BroilerEntry::factory()->create(['broiler_cycle_id' => $cycle->id, 'kind' => 'daily', 'birds' => 100, 'amount' => 0]);
+
+        $summary = app(BroilerLedger::class)->summary($cycle);
+
+        $this->assertNull($summary['chick_cost_total']);
+        $this->assertNull($summary['chick_costs']['chicks']);
+        $this->assertSame(1000.0, $summary['costs']);
+        $this->get(route('broiler.show', $cycle))->assertOk()->assertSee('غير متاح')->assertSee('لا يمكن حساب نصيب الكتكوت');
     }
 
     #[TestWith(['cash', 'كاش'])]

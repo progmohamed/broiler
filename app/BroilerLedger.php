@@ -9,7 +9,7 @@ use Illuminate\Validation\ValidationException;
 
 class BroilerLedger
 {
-    /** @return array{remaining: int, deaths: int, sold: int, feed: float, revenue: float, costs: float, profit: float, receivable: float, mortality: float, fcr: ?float, average_weight: ?float, weight_date: ?string, feed_received: float, feed_stock: float, expenses: array<string, float>, chick_cost_amounts: array<string, float>, chick_costs: array<string, float>, chick_cost_total: float, house_costs: float} */
+    /** @return array{remaining: int, deaths: int, sold: int, feed: float, revenue: float, costs: float, profit: float, receivable: float, mortality: float, fcr: ?float, average_weight: ?float, weight_date: ?string, feed_received: float, feed_stock: float, expenses: array<string, float>, chick_cost_amounts: array<string, float>, chick_cost_birds: int, chick_costs: array<string, ?float>, chick_cost_total: ?float, house_costs: float} */
     public function summary(BroilerCycle $cycle): array
     {
         $entries = $cycle->entries()->orderBy('recorded_on')->orderBy('id')->get();
@@ -40,14 +40,15 @@ class BroilerLedger
         $costs = round($houseCosts + (float) $cycle->chick_cost + $entries->where('kind', '!=', 'sale')->sum('amount'), 2);
 
         $chickCostAmounts = ['chicks' => (float) $cycle->chick_cost, ...$expenses, 'house' => $houseCosts];
+        $chickCostBirds = max(0, $cycle->initial_birds - $deaths);
         $chickCosts = [];
         foreach (BroilerEntry::CHICK_COST_CATEGORIES as $category => $label) {
-            $chickCosts[$category] = $chickCostAmounts[$category] / $cycle->initial_birds;
+            $chickCosts[$category] = $chickCostBirds > 0 ? $chickCostAmounts[$category] / $chickCostBirds : null;
         }
 
         return [
             'house_costs' => $houseCosts,
-            'chick_cost_amounts' => $chickCostAmounts, 'chick_costs' => $chickCosts, 'chick_cost_total' => array_sum($chickCostAmounts) / $cycle->initial_birds,
+            'chick_cost_birds' => $chickCostBirds, 'chick_cost_amounts' => $chickCostAmounts, 'chick_costs' => $chickCosts, 'chick_cost_total' => $chickCostBirds > 0 ? array_sum($chickCostAmounts) / $chickCostBirds : null,
             'feed_received' => $received, 'feed_stock' => round($received - $feed, 3), 'expenses' => $expenses,
             'remaining' => $remaining, 'deaths' => $deaths, 'sold' => $sold, 'feed' => $feed,
             'revenue' => $revenue, 'costs' => $costs, 'profit' => round($revenue - $costs, 2),
