@@ -144,6 +144,34 @@ class BroilerVaccinationTest extends TestCase
     }
 
     /** @param array<string, mixed> $overrides @return array<string, mixed> */
+    #[TestWith([1, '2026-10-21 06:00:00'])]
+    #[TestWith([7, '2026-10-27 06:00:00'])]
+    #[TestWith([11, '2026-10-31 07:00:00'])]
+    public function test_schedules_by_cycle_day_with_cairo_daylight_saving(int $day, string $expected): void
+    {
+        $cycle = BroilerCycle::factory()->create(['started_on' => '2026-10-21']);
+        $this->post(route('broiler.vaccinations.store', $cycle), ['name' => 'تحصين', 'cycle_day' => $day, 'scheduled_time' => '09:00', 'remind_before_hours' => 24])->assertSessionHasNoErrors();
+        $record = $cycle->vaccinations()->sole();
+        $this->assertSame($expected, $record->due_at->format('Y-m-d H:i:s'));
+        $this->assertSame($day, $record->cycleDay($cycle));
+        $this->get(route('broiler.show', $cycle))->assertSee('اليوم '.$day.' من الدورة')->assertSee('name="cycle_day"', false)->assertDontSee('type="datetime-local"', false);
+        $this->put(route('broiler.vaccinations.update', [$cycle, $record]), ['name' => 'تحصين', 'cycle_day' => 8, 'scheduled_time' => '10:00', 'remind_before_hours' => 6])->assertSessionHasNoErrors();
+        $this->assertSame('2026-10-28 07:00:00', $record->fresh()->due_at->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-10-28 01:00:00', $record->fresh()->remind_at->format('Y-m-d H:i:s'));
+    }
+
+    #[TestWith([0, '09:00', 'cycle_day'])]
+    #[TestWith([-1, '09:00', 'cycle_day'])]
+    #[TestWith([1.5, '09:00', 'cycle_day'])]
+    #[TestWith([null, '09:00', 'cycle_day'])]
+    #[TestWith([7, '25:00', 'scheduled_time'])]
+    public function test_invalid_cycle_day_or_time_is_rejected(mixed $day, string $time, string $field): void
+    {
+        $cycle = BroilerCycle::factory()->create();
+        $this->post(route('broiler.vaccinations.store', $cycle), ['name' => 'تحصين', 'cycle_day' => $day, 'scheduled_time' => $time, 'remind_before_hours' => 24])->assertSessionHasErrors($field);
+        $this->assertDatabaseCount('broiler_vaccinations', 0);
+    }
+
     private function payload(array $overrides = []): array
     {
         return array_replace(['name' => 'تحصين الدورة', 'scheduled_at' => '2026-10-24T09:00', 'remind_before_hours' => 24], $overrides);

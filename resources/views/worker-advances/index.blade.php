@@ -6,7 +6,7 @@
     </header>
     @if (session('status'))<div class="ios-status" role="status">{{ session('status') }}</div>@endif
 
-    <dl class="ios-card grid grid-cols-2 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
+    <dl class="ios-metrics ios-card grid grid-cols-2 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
         <div class="px-3"><dt class="text-xs text-slate-400">إجمالي السلف</dt><dd class="mt-1 text-2xl font-bold text-ios-red">{{ number_format($totalAmount, 2) }}</dd></div>
         <div class="px-3"><dt class="text-xs text-slate-400">عدد العمليات</dt><dd class="mt-1 text-2xl font-bold text-ios-blue">{{ number_format($transactionCount) }}</dd></div>
     </dl>

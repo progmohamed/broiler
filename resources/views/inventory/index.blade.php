@@ -15,7 +15,7 @@
 
     <section class="flex flex-col gap-2" aria-labelledby="feed-stock-title">
         <div class="flex items-baseline justify-between px-1"><h2 class="ios-section-title p-0" id="feed-stock-title">مخزون العلف</h2><a class="text-xs font-semibold text-ios-blue" href="#feed-movements">حركات العلف ←</a></div>
-        <dl class="ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
+        <dl class="ios-metrics ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">الرصيد</dt><dd class="mt-1 text-xl font-bold {{ $remainingFeedKilograms < 0 ? 'text-ios-red' : 'text-ios-green' }}">{{ number_format($remainingFeedKilograms) }}</dd><dd class="text-xs text-slate-400">كجم</dd></div>
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">ما يعادل</dt><dd class="mt-1 text-xl font-bold text-ios-blue">{{ number_format($remainingFeedSacks, 1) }}</dd><dd class="text-xs text-slate-400">شيكارة</dd></div>
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">يكفي لمدة</dt><dd class="mt-1 text-xl font-bold text-ios-orange">{{ $feedDaysRemaining === null ? '—' : number_format($feedDaysRemaining, 1) }}</dd><dd class="text-xs text-slate-400">يوم تقريبي</dd></div>
@@ -25,7 +25,7 @@
 
     <section class="flex flex-col gap-2" aria-labelledby="egg-stock-title">
         <div class="flex items-baseline justify-between px-1"><h2 class="ios-section-title p-0" id="egg-stock-title">مخزون البيض</h2><a class="text-xs font-semibold text-ios-blue" href="#egg-movements">حركات البيض ←</a></div>
-        <dl class="ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
+        <dl class="ios-metrics ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">الرصيد</dt><dd class="mt-1 text-xl font-bold {{ $remainingEggs < 0 ? 'text-ios-red' : 'text-ios-green' }}">{{ number_format($remainingEggs) }}</dd><dd class="text-xs text-slate-400">بيضة</dd></div>
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">ما يعادل</dt><dd class="mt-1 text-xl font-bold text-ios-blue">{{ number_format($remainingEggCartons, 1) }}</dd><dd class="text-xs text-slate-400">كرتونة</dd></div>
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">الإنتاج / البيع</dt><dd class="mt-1 text-base font-bold">{{ number_format($producedEggs) }}</dd><dd class="text-xs text-slate-400">بيع {{ number_format($soldEggs) }}</dd></div>

@@ -69,7 +69,7 @@ class BroilerVaccinationController extends Controller
         $reminders = BroilerVaccination::query()->with('cycle.house')->whereNull('completed_at')->where('remind_at', '<=', now('UTC'))->whereHas('cycle', fn ($query) => $query->whereNull('closed_on'))->orderBy('due_at')->get()->map(fn (BroilerVaccination $record): array => [
             'id' => $record->id, 'key' => $record->id.'-'.$record->due_at->timestamp.'-'.$record->remind_at->timestamp,
             'title' => $record->name, 'cycle' => $record->cycle->name, 'house' => $record->cycle->house->name,
-            'due' => $record->due_at->setTimezone(BroilerVaccination::TIMEZONE)->format('Y-m-d H:i').' (توقيت القاهرة)',
+            'due' => 'اليوم '.$record->cycleDay($record->cycle).' من الدورة · '.$record->due_at->setTimezone(BroilerVaccination::TIMEZONE)->format('Y-m-d H:i').' (توقيت القاهرة)',
             'overdue' => $record->due_at->isPast(), 'url' => route('broiler.show', $record->cycle).'#vaccinations',
         ]);
 
@@ -113,11 +113,14 @@ class BroilerVaccinationController extends Controller
     {
         $data = $request->validated();
         $data['timezone'] = BroilerVaccination::TIMEZONE;
+        if (isset($data['cycle_day'])) {
+            $data['scheduled_at'] = Carbon::parse($cycle->started_on->toDateString(), $data['timezone'])->addDays((int) $data['cycle_day'] - 1)->format('Y-m-d').'T'.$data['scheduled_time'];
+        }
         $due = Carbon::createFromFormat('!Y-m-d\TH:i', $data['scheduled_at'], $data['timezone']);
         if ($due->format('Y-m-d\TH:i') !== $data['scheduled_at'] || $due->toDateString() < $cycle->started_on->toDateString()) {
-            throw ValidationException::withMessages(['scheduled_at' => 'اختر موعدًا صحيحًا لا يسبق بداية الدورة.']);
+            throw ValidationException::withMessages([isset($data['cycle_day']) ? 'scheduled_time' : 'scheduled_at' => 'اختر موعدًا صحيحًا لا يسبق بداية الدورة.']);
         }
-        unset($data['scheduled_at']);
+        unset($data['scheduled_at'], $data['cycle_day'], $data['scheduled_time']);
         $data['due_at'] = $due->utc();
         $data['remind_at'] = $due->copy()->subHours((int) $data['remind_before_hours']);
 

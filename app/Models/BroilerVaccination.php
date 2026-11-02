@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Database\Factories\BroilerVaccinationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,13 @@ class BroilerVaccination extends Model
     public function cycle(): BelongsTo
     {
         return $this->belongsTo(BroilerCycle::class, 'broiler_cycle_id');
+    }
+
+    public function cycleDay(BroilerCycle $cycle): int
+    {
+        $start = CarbonImmutable::parse($cycle->started_on->toDateString(), self::TIMEZONE);
+
+        return (int) $start->diffInDays($this->due_at->setTimezone(self::TIMEZONE)->startOfDay()) + 1;
     }
 
     public function statusLabel(): string

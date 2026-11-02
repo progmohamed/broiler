@@ -19,7 +19,7 @@
             <h2 class="ios-section-title p-0" id="revenue-summary-title">ملخص الإيرادات</h2>
             <span class="text-[0.65rem] text-slate-400">حسب الفترة والفلاتر المعروضة</span>
         </div>
-        <dl class="ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
+        <dl class="ios-metrics ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">إجمالي المبيعات</dt><dd class="mt-1 text-xl font-bold text-ios-green">{{ number_format($totalRevenue, 2) }}</dd><dd class="text-xs text-slate-400">{{ $transactionCount }} عملية</dd></div>
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">مبيعات البيض</dt><dd class="mt-1 text-xl font-bold text-ios-blue">{{ number_format($eggRevenue, 2) }}</dd><dd class="text-xs text-slate-400">أخرى: {{ number_format($otherRevenue, 2) }}</dd></div>
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">المبالغ الآجلة</dt><dd class="mt-1 text-xl font-bold text-ios-orange">{{ number_format($pendingRevenue, 2) }}</dd><dd class="text-xs text-slate-400">مطلوب تحصيلها</dd></div>

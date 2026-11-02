@@ -4,9 +4,9 @@
     <div class="ios-page-header"><p class="ios-eyebrow">{{ $cycle->house->name }} · {{ $cycle->closed_on ? 'دورة مغلقة' : 'دورة جارية' }}</p><h1 class="ios-large-title">{{ $cycle->name }}</h1><p class="text-sm text-slate-500">من {{ $cycle->started_on->format('Y-m-d') }} · {{ number_format($cycle->initial_birds) }} كتكوت · عمر الدورة {{ (int) $cycle->started_on->diffInDays($cycle->closed_on ?? today()) }} يوم</p></div>
     @if(!$cycle->closed_on)<details class="max-w-full"><summary class="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 font-semibold">إدارة الدورة</summary><div class="mt-3 max-w-sm">@include('broiler.close-cycle')</div></details>@endif
 </header>
-<section class="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="مؤشرات الدورة">
+<section class="ios-metrics grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="مؤشرات الدورة">
 @foreach(['remaining' => 'الطيور المتبقية', 'deaths' => 'النفوق', 'feed_stock' => 'رصيد المخزن (طن)', 'profit' => 'الربح حسب المسجل'] as $key => $label)
-    <div class="ios-card p-4"><p class="text-sm text-slate-500">{{ $label }}</p><p class="mt-2 text-2xl font-bold {{ $key === 'profit' && $summary[$key] < 0 ? 'text-red-700' : 'text-emerald-900' }}">{{ number_format($key === 'feed_stock' ? $summary[$key] / 1000 : $summary[$key], in_array($key, ['remaining', 'deaths']) ? 0 : ($key === 'feed_stock' ? 3 : 2)) }}</p>@if($key === 'deaths')<p class="mt-1 text-xs text-slate-500">نسبة النفوق {{ number_format($summary['mortality'], 2) }}%</p>@endif</div>
+    <div class="ios-card p-4"><p class="text-sm text-slate-500">{{ $label }}</p><p class="mt-2 text-xl sm:text-2xl font-bold {{ $key === 'profit' && $summary[$key] < 0 ? 'text-red-700' : 'text-emerald-900' }}">{{ number_format($key === 'feed_stock' ? $summary[$key] / 1000 : $summary[$key], in_array($key, ['remaining', 'deaths']) ? 0 : ($key === 'feed_stock' ? 3 : 2)) }}</p>@if($key === 'deaths')<p class="mt-1 text-xs text-slate-500">نسبة النفوق {{ number_format($summary['mortality'], 2) }}%</p>@endif</div>
 @endforeach
 </section>
 <noscript><style>[data-cycle-panel][hidden]{display:block!important}</style></noscript>
@@ -14,7 +14,7 @@
 <div class="flex flex-col gap-4">
 <h2 class="text-lg font-bold">متابعة اليوم</h2>
 @if(!$cycle->closed_on)<div class="grid items-start gap-4 md:grid-cols-2">@include('broiler.daily-form') @include('broiler.weight-form')</div>@endif
-<div class="ios-card grid gap-4 p-5 sm:grid-cols-2"><div><p class="ios-label">متوسط وزن آخر عينة (كجم/طائر)</p><p class="text-2xl font-bold">{{ $summary['average_weight'] === null ? 'غير متاح' : number_format($summary['average_weight'], 3) }}</p><p class="text-xs text-slate-500">{{ $summary['weight_date'] }}</p></div><div><p class="ios-label">معامل التحويل الغذائي FCR</p><p class="text-2xl font-bold">{{ $summary['fcr'] === null ? 'غير متاح' : number_format($summary['fcr'], 3) }}</p></div></div>
+<div class="ios-card grid gap-4 p-5 sm:grid-cols-2"><div><p class="ios-label">متوسط وزن آخر عينة (كجم/طائر)</p><p class="text-xl sm:text-2xl font-bold">{{ $summary['average_weight'] === null ? 'غير متاح' : number_format($summary['average_weight'], 3) }}</p><p class="text-xs text-slate-500">{{ $summary['weight_date'] }}</p></div><div><p class="ios-label">معامل التحويل الغذائي FCR</p><p class="text-xl sm:text-2xl font-bold">{{ $summary['fcr'] === null ? 'غير متاح' : number_format($summary['fcr'], 3) }}</p></div></div>
 @include('broiler.daily-history')
 </div></section>
 <section id="cycle-panel-feed" role="tabpanel" aria-labelledby="cycle-tab-feed" data-cycle-panel="feed" @if($activeTab !== 'feed') hidden @endif><div class="flex flex-col gap-4">
@@ -38,13 +38,13 @@
 </div></section>
 <section id="cycle-panel-sales" role="tabpanel" aria-labelledby="cycle-tab-sales" data-cycle-panel="sales" @if($activeTab !== 'sales') hidden @endif><div class="flex flex-col gap-4">
 <div><h2 class="text-lg font-bold">المبيعات والتحصيل</h2><p class="text-sm text-slate-500">سجّل بيع الطيور وراجع المبالغ المحصلة والمستحقة.</p></div>
-<div class="ios-card grid grid-cols-3 gap-3 p-5">@foreach(['sold' => 'الطيور المباعة', 'revenue' => 'إجمالي المبيعات', 'receivable' => 'المستحقات'] as $key => $label)<div><p class="ios-label">{{ $label }}</p><p class="text-lg font-bold">{{ number_format($summary[$key], $key === 'sold' ? 0 : 2) }}</p></div>@endforeach</div>
+<div class="ios-card ios-metrics grid grid-cols-3 gap-3 p-5">@foreach(['sold' => 'الطيور المباعة', 'revenue' => 'إجمالي المبيعات', 'receivable' => 'المستحقات'] as $key => $label)<div><p class="ios-label">{{ $label }}</p><p class="text-lg font-bold">{{ number_format($summary[$key], $key === 'sold' ? 0 : 2) }}</p></div>@endforeach</div>
 @if(!$cycle->closed_on) @include('broiler.sale-form') @endif
 @include('broiler.entry-history', ['entries' => $saleEntries, 'historyTitle' => 'سجل المبيعات'])
 </div></section>
 <section id="cycle-panel-reports" role="tabpanel" aria-labelledby="cycle-tab-reports" data-cycle-panel="reports" @if($activeTab !== 'reports') hidden @endif><div class="flex flex-col gap-4">
 <h2 class="text-lg font-bold">تقارير الدورة والنتائج المالية</h2>
-<div class="ios-card grid grid-cols-2 gap-4 p-5 lg:grid-cols-4">@foreach(['sold' => 'الطيور المباعة', 'revenue' => 'إجمالي المبيعات', 'costs' => 'إجمالي التكاليف', 'receivable' => 'المبالغ المستحقة'] as $key => $label)<div><p class="ios-label">{{ $label }}</p><p class="text-xl font-bold">{{ number_format($summary[$key], $key === 'sold' ? 0 : 2) }}</p></div>@endforeach</div>
+<div class="ios-card ios-metrics grid grid-cols-2 gap-4 p-5 lg:grid-cols-4">@foreach(['sold' => 'الطيور المباعة', 'revenue' => 'إجمالي المبيعات', 'costs' => 'إجمالي التكاليف', 'receivable' => 'المبالغ المستحقة'] as $key => $label)<div><p class="ios-label">{{ $label }}</p><p class="text-xl font-bold">{{ number_format($summary[$key], $key === 'sold' ? 0 : 2) }}</p></div>@endforeach</div>
 @include('broiler.chick-cost-report')
 @include('broiler.entry-history')
 </div></section>

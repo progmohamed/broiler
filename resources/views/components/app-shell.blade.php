@@ -17,7 +17,7 @@
         @endif
     </head>
     <body class="min-h-screen bg-ios-background text-slate-950 antialiased">
-        <main class="mx-auto flex min-h-screen max-w-lg flex-col gap-6 px-4 pb-32 pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-6">
+        <main class="mx-auto flex w-full min-w-0 min-h-screen max-w-lg flex-col gap-6 px-4 pb-32 pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-6">
             {{ $slot }}
         </main>
 

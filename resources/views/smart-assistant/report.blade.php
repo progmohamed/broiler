@@ -6,7 +6,7 @@
     </div>
 
     @if ($report['metrics'] !== [])
-        <dl class="grid grid-cols-2 gap-2">
+        <dl class="ios-metrics grid grid-cols-2 gap-2">
             @foreach ($report['metrics'] as $metric)
                 <div class="ios-card flex flex-col gap-2 p-3">
                     <dt class="text-xs leading-5 text-slate-500">{{ $metric['label'] }}</dt>

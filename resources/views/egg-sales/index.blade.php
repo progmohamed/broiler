@@ -15,7 +15,7 @@
             <h2 class="ios-section-title p-0" id="egg-sales-summary-title">الإجمالي</h2>
             <a class="text-xs font-semibold text-ios-blue" href="{{ route('sales.index') }}#egg-sale-form">إضافة بيع بيض</a>
         </div>
-        <dl class="ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
+        <dl class="ios-metrics ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">الكراتين</dt><dd class="mt-1 text-xl font-bold">{{ number_format($totalCartons) }}</dd><dd class="text-xs text-slate-400">كرتونة</dd></div>
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">المبيعات</dt><dd class="mt-1 text-xl font-bold text-ios-green">{{ number_format($totalRevenue, 2) }}</dd><dd class="text-xs text-slate-400">إجمالي القيمة</dd></div>
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">غير محصل</dt><dd class="mt-1 text-xl font-bold text-ios-orange">{{ number_format($pendingRevenue, 2) }}</dd><dd class="text-xs text-slate-400">مبلغ مستحق</dd></div>
@@ -53,7 +53,7 @@
                     </div>
                     <span class="rounded-full px-2.5 py-1 text-[0.65rem] font-semibold {{ $sale->payment_status === 'paid' ? 'bg-green-50 text-ios-green' : 'bg-orange-50 text-ios-orange' }}">{{ $sale->payment_status === 'paid' ? 'تم الدفع' : 'مبلغ مستحق' }}</span>
                 </div>
-                <dl class="mt-4 grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 text-center">
+                <dl class="ios-metrics mt-4 grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 text-center">
                     <div class="px-1"><dt class="text-[0.65rem] text-slate-400">الكمية</dt><dd class="mt-1 font-semibold">{{ number_format($sale->cartons) }} كرتونة</dd></div>
                     <div class="px-1"><dt class="text-[0.65rem] text-slate-400">سعر الكرتونة</dt><dd class="mt-1 font-semibold text-ios-blue">{{ number_format((float) $sale->price_per_carton, 2) }}</dd></div>
                     <div class="px-1"><dt class="text-[0.65rem] text-slate-400">الإجمالي</dt><dd class="mt-1 font-semibold text-ios-green">{{ number_format($sale->totalAmount(), 2) }}</dd></div>

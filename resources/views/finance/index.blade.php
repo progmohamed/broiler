@@ -19,7 +19,7 @@
             <h2 class="ios-section-title p-0" id="finance-summary-title">النظرة المالية</h2>
             <span class="text-[0.65rem] text-slate-400">كل المبيعات والمصروفات شاملة العلف</span>
         </div>
-        <dl class="ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
+        <dl class="ios-metrics ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
             <div class="px-2">
                 <dt class="text-[0.68rem] text-slate-400">الإيرادات</dt>
                 <dd class="mt-1 text-xl font-bold text-ios-green">{{ number_format($totalRevenue, 2) }}</dd>
@@ -40,7 +40,7 @@
 
     <section class="flex flex-col gap-2" aria-labelledby="expense-summary-title">
         <h2 class="ios-section-title" id="expense-summary-title">ملخص المصروفات</h2>
-        <dl class="ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
+        <dl class="ios-metrics ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
             <div class="px-2">
                 <dt class="text-[0.68rem] text-slate-400">إجمالي المصروفات</dt>
                 <dd class="mt-1 text-xl font-bold text-ios-red">{{ number_format($totalAmount, 2) }}</dd>

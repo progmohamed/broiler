@@ -6,6 +6,7 @@ use App\BroilerLedger;
 use App\Http\Requests\StoreBroilerCycleRequest;
 use App\Http\Requests\StoreBroilerEntryRequest;
 use App\Http\Requests\UpdateBroilerCostRequest;
+use App\Http\Requests\UpdateBroilerDailyRequest;
 use App\Models\BroilerCycle;
 use App\Models\BroilerEntry;
 use App\Models\BroilerHouse;
@@ -76,7 +77,9 @@ class BroilerController extends Controller
             $activeTab = 'daily';
         }
         $old = $request->session()->getOldInput();
-        if (isset($old['vaccination_form'])) {
+        if (isset($old['daily_entry'])) {
+            $activeTab = 'daily';
+        } elseif (isset($old['vaccination_form'])) {
             $activeTab = 'vaccinations';
         } elseif (isset($old['cost_entry']) || isset($old['cost_form'])) {
             $activeTab = isset($old['cost_entry']) && $cycle->entries()->whereKey($old['cost_entry'])->where('kind', 'feed_delivery')->exists() ? 'feed' : 'costs';
@@ -145,6 +148,25 @@ class BroilerController extends Controller
         });
 
         return to_route('broiler.show', $cycle)->with('cycle_tab', $cycle->entries()->whereKey($entry)->value('kind') === 'feed_delivery' ? 'feed' : 'costs')->with('status', 'تم تعديل المصروف وتحديث الحسابات.');
+    }
+
+    public function updateDaily(UpdateBroilerDailyRequest $request, BroilerCycle $cycle, int $entry, BroilerLedger $ledger): RedirectResponse
+    {
+        $ledger->updateDaily($cycle, $entry, $request->validated());
+
+        return to_route('broiler.show', [$cycle, 'tab' => 'daily'])->with('cycle_tab', 'daily')->with('status', 'تم تعديل اليومية وتحديث الحسابات.');
+    }
+
+    public function destroyCost(BroilerCycle $cycle, int $entry): RedirectResponse
+    {
+        DB::transaction(function () use ($cycle, $entry): void {
+            $cycle = BroilerCycle::query()->lockForUpdate()->findOrFail($cycle->id);
+            $record = $cycle->entries()->lockForUpdate()->findOrFail($entry);
+            abort_unless(in_array($record->kind, ['expense', 'medicine'], true), 404);
+            $record->delete();
+        });
+
+        return to_route('broiler.show', [$cycle, 'tab' => 'costs'])->with('cycle_tab', 'costs')->with('status', 'تم حذف المصروف وتحديث الحسابات.');
     }
 
     public function close(BroilerCycle $cycle, BroilerLedger $ledger): RedirectResponse

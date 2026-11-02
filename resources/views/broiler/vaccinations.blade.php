@@ -7,7 +7,8 @@
     @forelse($vaccinations as $vaccination)
         <article class="ios-card flex flex-col gap-3 p-5">
             <div class="flex flex-wrap justify-between gap-2"><h3 class="font-bold">{{ $vaccination->name }}</h3><span class="text-sm {{ $vaccination->completed_at ? 'text-emerald-700' : 'text-amber-700' }}">{{ $vaccination->statusLabel() }}</span></div>
-            <p>{{ $vaccination->due_at->setTimezone(\App\Models\BroilerVaccination::TIMEZONE)->format('Y-m-d H:i') }} <span class="text-sm text-slate-500">(توقيت القاهرة)</span></p>
+            <p class="text-lg font-bold text-emerald-800">اليوم {{ $vaccination->cycleDay($cycle) }} من الدورة</p>
+            <p class="text-sm text-slate-500">{{ $vaccination->due_at->setTimezone(\App\Models\BroilerVaccination::TIMEZONE)->format('Y-m-d H:i') }} <span class="text-sm text-slate-500">(توقيت القاهرة)</span></p>
             <p class="text-sm text-slate-500">تنبيه قبل {{ $vaccination->remind_before_hours }} ساعة · {{ $vaccination->notes }}</p>
             @if($vaccination->completed_at)
                 <p class="text-sm text-emerald-700">تم التنفيذ {{ $vaccination->completed_at->setTimezone(\App\Models\BroilerVaccination::TIMEZONE)->format('Y-m-d H:i') }}</p>

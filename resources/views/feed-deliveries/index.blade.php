@@ -15,7 +15,7 @@
             <h2 class="ios-section-title p-0" id="feed-deliveries-summary-title">الإجمالي</h2>
             <a class="text-xs font-semibold text-ios-blue" href="{{ route('finance.index') }}#feed-purchase-form">إضافة شراء علف</a>
         </div>
-        <dl class="ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
+        <dl class="ios-metrics ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">الوزن</dt><dd class="mt-1 text-xl font-bold">{{ number_format($totalWeightTons, 3) }}</dd><dd class="text-xs text-slate-400">طن</dd></div>
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">ما يعادل</dt><dd class="mt-1 text-xl font-bold text-ios-blue">{{ number_format($totalSacks, 1) }}</dd><dd class="text-xs text-slate-400">شيكارة</dd></div>
             <div class="px-2"><dt class="text-[0.68rem] text-slate-400">التكلفة</dt><dd class="mt-1 text-xl font-bold text-ios-red">{{ number_format($totalCost, 2) }}</dd><dd class="text-xs text-slate-400">شاملة الإضافات</dd></div>
@@ -56,7 +56,7 @@
                         <span class="rounded-full px-2 py-0.5 text-[0.65rem] font-semibold {{ $delivery->payment_method->value === 'credit' ? 'bg-orange-50 text-ios-orange' : 'bg-slate-100 text-slate-500' }}">{{ $delivery->payment_method->label() }}</span>
                     </div>
                 </div>
-                <dl class="mt-4 grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 text-center">
+                <dl class="ios-metrics mt-4 grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 text-center">
                     <div class="px-1"><dt class="text-[0.65rem] text-slate-400">الوزن</dt><dd class="mt-1 font-semibold">{{ number_format((float) $delivery->weight_tons, 3) }} طن</dd></div>
                     <div class="px-1"><dt class="text-[0.65rem] text-slate-400">الشكاير</dt><dd class="mt-1 font-semibold text-ios-blue">{{ number_format($delivery->sackCount(), 1) }}</dd></div>
                     <div class="px-1"><dt class="text-[0.65rem] text-slate-400">سعر الطن</dt><dd class="mt-1 font-semibold">{{ number_format((float) $delivery->price_per_ton, 2) }}</dd></div>

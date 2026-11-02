@@ -49,7 +49,7 @@
 
     <section class="flex flex-col gap-2" aria-labelledby="inventory-summary-title">
         <h2 class="ios-section-title" id="inventory-summary-title">المخزون الحالي</h2>
-        <dl class="grid grid-cols-2 gap-2">
+        <dl class="ios-metrics grid grid-cols-2 gap-2">
             <div class="ios-card flex min-h-32 flex-col p-4">
                 <dt class="text-xs font-semibold text-slate-500">العلف المتبقي بالمخزن</dt>
                 <dd class="mt-2 text-3xl font-bold tracking-tight {{ $remainingFeedKilograms < 0 ? 'text-ios-red' : 'text-ios-green' }}">{{ number_format($remainingFeedSacks, 1) }}</dd>
@@ -134,7 +134,7 @@
             <div class="mt-2 flex justify-between gap-2 text-center">
                 @foreach ($productionTrend as $trendDay)<span class="min-w-0 flex-1 text-[0.6rem] text-slate-400">{{ $trendDay['date']->translatedFormat('D') }}</span>@endforeach
             </div>
-            <dl class="mt-4 grid grid-cols-2 divide-x divide-x-reverse divide-slate-200 border-t border-slate-100 pt-4 text-center">
+            <dl class="ios-metrics mt-4 grid grid-cols-2 divide-x divide-x-reverse divide-slate-200 border-t border-slate-100 pt-4 text-center">
                 <div class="px-1"><dt class="text-[0.65rem] text-slate-400">متوسط العلف</dt><dd class="mt-1 font-bold text-ios-blue">{{ $weeklyAverageFeedKilograms === null ? '—' : number_format($weeklyAverageFeedKilograms / 50, 1) }} شيكارة</dd></div>
                 <div class="px-1"><dt class="text-[0.65rem] text-slate-400">إجمالي النافق</dt><dd class="mt-1 font-bold {{ $weeklyTotalDeaths > 0 ? 'text-ios-red' : 'text-ios-green' }}">{{ number_format($weeklyTotalDeaths) }}</dd></div>
             </dl>
@@ -150,7 +150,7 @@
         @forelse ($records as $recentRecord)
             <article class="ios-card p-4">
                 <div class="flex items-center justify-between gap-3"><p class="text-sm font-semibold text-slate-600">{{ $recentRecord['record']->recorded_on->translatedFormat('l، j F Y') }}</p><a class="text-xs font-semibold text-ios-blue" href="{{ route('daily-records.index', ['recorded_on' => $recentRecord['record']->recorded_on->toDateString()]).'#daily-entry' }}">تعديل</a></div>
-                <dl class="mt-3 grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 text-center">
+                <dl class="ios-metrics mt-3 grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 text-center">
                     <div class="px-1"><dt class="text-xs text-slate-400">العلف</dt><dd class="mt-1 text-lg font-bold text-ios-blue">{{ number_format($recentRecord['record']->feedInSacks(), 1) }}</dd><dd class="text-[0.6rem] text-slate-400">شيكارة · {{ number_format($recentRecord['record']->feed) }} كجم</dd></div>
                     <div class="px-1"><dt class="text-xs text-slate-400">النافق</dt><dd class="mt-1 text-lg font-bold text-ios-red">{{ number_format($recentRecord['record']->deaths) }}</dd></div>
                     <div class="px-1">
@@ -170,7 +170,7 @@
                         <dd class="text-[0.6rem] font-medium text-slate-400">{{ number_format($recentRecord['record']->productionInCartons(), 1) }} كرتونة</dd>
                     </div>
                 </dl>
-                <dl class="mt-3 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-center">
+                <dl class="ios-metrics mt-3 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-center">
                     <div><dt class="text-[0.6rem] text-slate-400">العمر بالأيام</dt><dd class="mt-1 text-sm font-semibold">{{ $recentRecord['ageInDays'] === null ? '—' : number_format($recentRecord['ageInDays']) }}</dd></div>
                     <div><dt class="text-[0.6rem] text-slate-400">العمر بالأسابيع</dt><dd class="mt-1 text-sm font-semibold">{{ $recentRecord['ageInWeeks'] === null ? '—' : number_format($recentRecord['ageInWeeks']) }}</dd></div>
                     <div><dt class="text-[0.6rem] text-slate-400">نسبة الإنتاج</dt><dd class="mt-1 text-sm font-semibold text-ios-green">{{ $recentRecord['productionPercentage'] === null ? '—' : number_format($recentRecord['productionPercentage'], 1).'%' }}</dd></div>

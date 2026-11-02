@@ -28,7 +28,7 @@
     </div>
 
     @if ($metrics !== [])
-        <dl class="ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
+        <dl class="ios-metrics ios-card grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 py-4 text-center">
             @foreach ($metrics as $metric)
                 <div class="px-2">
                     <dt class="text-[0.68rem] text-slate-400">{{ $metric['label'] }}</dt>

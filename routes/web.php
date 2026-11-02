@@ -34,6 +34,8 @@ Route::middleware('farm.unlocked')->group(function (): void {
     Route::post('/houses/{house}/expenses', [BroilerHouseExpenseController::class, 'store'])->name('broiler.houses.expenses.store');
     Route::put('/houses/{house}/expenses/{expense}', [BroilerHouseExpenseController::class, 'update'])->whereNumber('expense')->name('broiler.houses.expenses.update');
     Route::put('/cycles/{cycle}/chick-cost', [BroilerController::class, 'updateChickCost'])->name('broiler.chick-cost.update');
+    Route::put('/cycles/{cycle}/entries/{entry}/daily', [BroilerController::class, 'updateDaily'])->whereNumber('entry')->name('broiler.entries.daily.update');
+    Route::delete('/cycles/{cycle}/entries/{entry}/cost', [BroilerController::class, 'destroyCost'])->whereNumber('entry')->name('broiler.entries.cost.destroy');
     Route::put('/cycles/{cycle}/entries/{entry}/cost', [BroilerController::class, 'updateCost'])->whereNumber('entry')->name('broiler.entries.cost.update');
     Route::post('/houses', [BroilerController::class, 'storeHouse'])->name('broiler.houses.store');
     Route::post('/cycles', [BroilerController::class, 'store'])->name('broiler.store');

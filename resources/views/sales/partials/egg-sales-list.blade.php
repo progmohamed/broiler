@@ -15,7 +15,7 @@
                     {{ $sale->payment_status === 'paid' ? 'تم الدفع' : 'مبلغ مستحق' }}
                 </span>
             </div>
-            <dl class="mt-4 grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 text-center">
+            <dl class="ios-metrics mt-4 grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 text-center">
                 <div class="px-1"><dt class="text-[0.65rem] text-slate-400">الكمية</dt><dd class="mt-1 font-semibold">{{ number_format($sale->cartons) }} كرتونة</dd></div>
                 <div class="px-1"><dt class="text-[0.65rem] text-slate-400">سعر الكرتونة</dt><dd class="mt-1 font-semibold text-ios-blue">{{ number_format((float) $sale->price_per_carton, 2) }}</dd></div>
                 <div class="px-1"><dt class="text-[0.65rem] text-slate-400">الإجمالي</dt><dd class="mt-1 font-semibold text-ios-green">{{ number_format($sale->totalAmount(), 2) }}</dd></div>

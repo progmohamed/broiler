@@ -15,7 +15,9 @@ class SaveBroilerVaccinationRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:150'],
-            'scheduled_at' => ['required', 'date_format:Y-m-d\TH:i'],
+            'cycle_day' => ['required_without:scheduled_at', 'integer', 'min:1', 'max:3650'],
+            'scheduled_time' => ['required_with:cycle_day', 'date_format:H:i'],
+            'scheduled_at' => ['required_without:cycle_day', 'date_format:Y-m-d\TH:i'],
             'remind_before_hours' => ['required', 'integer', 'min:1', 'max:168'],
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
@@ -23,6 +25,6 @@ class SaveBroilerVaccinationRequest extends FormRequest
 
     public function attributes(): array
     {
-        return ['name' => 'اسم التحصين', 'scheduled_at' => 'موعد التحصين', 'remind_before_hours' => 'ساعات التنبيه'];
+        return ['cycle_day' => 'يوم الدورة', 'scheduled_time' => 'وقت التحصين', 'name' => 'اسم التحصين', 'scheduled_at' => 'موعد التحصين', 'remind_before_hours' => 'ساعات التنبيه'];
     }
 }

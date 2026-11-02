@@ -109,6 +109,39 @@ class BroilerLedger
         });
     }
 
+    /** @param array<string, mixed> $data */
+    public function updateDaily(BroilerCycle $cycle, int $entry, array $data): void
+    {
+        DB::transaction(function () use ($cycle, $entry, $data): void {
+            $cycle = BroilerCycle::query()->lockForUpdate()->findOrFail($cycle->id);
+            $record = $cycle->entries()->lockForUpdate()->findOrFail($entry);
+            abort_unless($record->kind === 'daily', 404);
+            $this->ensureOpen($cycle);
+            if ($data['recorded_on'] < $cycle->started_on->toDateString()) {
+                throw ValidationException::withMessages(['recorded_on' => 'لا يمكن التسجيل قبل بداية الدورة.']);
+            }
+            if ($cycle->entries()->where('id', '!=', $record->id)->whereDate('daily_on', $data['recorded_on'])->exists()) {
+                throw ValidationException::withMessages(['recorded_on' => 'تم تسجيل يومية لهذا التاريخ بالفعل.']);
+            }
+            $data['feed_kg'] = round((float) $data['feed_sacks'] * BroilerEntry::SACK_WEIGHT_KG, 3);
+            unset($data['feed_sacks']);
+            $data['daily_on'] = $data['recorded_on'];
+            $record->update($data);
+            $this->ensureFeedAvailable($cycle, $data['recorded_on'], 0);
+            $entries = $cycle->entries()->get();
+            $removed = $entries->whereIn('kind', ['daily', 'sale']);
+            if ($removed->sum('birds') > $cycle->initial_birds) {
+                throw ValidationException::withMessages(['birds' => 'النفوق والمبيعات يتجاوزان عدد الطيور في الدورة.']);
+            }
+            foreach ($entries->where('kind', 'weight') as $weight) {
+                $available = $cycle->initial_birds - $removed->filter(fn ($row): bool => $row->recorded_on->lte($weight->recorded_on))->sum('birds');
+                if ($weight->birds > $available) {
+                    throw ValidationException::withMessages(['birds' => 'التعديل يجعل عدد عينة وزن مسجلة أكبر من الطيور المتاحة في تاريخها.']);
+                }
+            }
+        });
+    }
+
     public function close(BroilerCycle $cycle): void
     {
         DB::transaction(function () use ($cycle): void {
