@@ -138,6 +138,7 @@ class BroilerController extends Controller
         DB::transaction(function () use ($request, $cycle, $entry): void {
             $cycle = BroilerCycle::query()->lockForUpdate()->findOrFail($cycle->id);
             $record = $cycle->entries()->lockForUpdate()->findOrFail($entry);
+            abort_if($record->medicine_transfer_id !== null, 422, 'هذه التكلفة مرتبطة بالمخزن. استخدم المرتجع من شاشة صرف الدواء.');
             abort_unless(in_array($record->kind, ['expense', 'medicine', 'feed_delivery'], true), 404);
             $data = $request->validated();
             if ($record->kind === 'feed_delivery') {
@@ -162,6 +163,7 @@ class BroilerController extends Controller
         DB::transaction(function () use ($cycle, $entry): void {
             $cycle = BroilerCycle::query()->lockForUpdate()->findOrFail($cycle->id);
             $record = $cycle->entries()->lockForUpdate()->findOrFail($entry);
+            abort_if($record->medicine_transfer_id !== null, 422, 'هذه التكلفة مرتبطة بالمخزن. استخدم المرتجع من شاشة صرف الدواء.');
             abort_unless(in_array($record->kind, ['expense', 'medicine'], true), 404);
             $record->delete();
         });

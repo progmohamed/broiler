@@ -12,6 +12,7 @@ use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FarmSettingController;
 use App\Http\Controllers\FeedDeliveryController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\MedicineTransferController;
 use App\Http\Controllers\OtherSaleController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SmartAssistantController;
@@ -79,4 +80,11 @@ Route::middleware('farm.unlocked')->group(function (): void {
     Route::get('/backups/download', [BackupController::class, 'download'])->name('backups.download');
     Route::post('/backups/restore', [BackupController::class, 'restore'])->middleware('throttle:3,1')->name('backups.restore');
     Route::post('/lock', [AppUnlockController::class, 'destroy'])->name('app-lock.destroy');
+});
+
+Route::middleware('farm.unlocked')->group(function (): void {
+    Route::get('/medicine-store', [MedicineTransferController::class, 'index'])->name('medicine-transfers.index');
+    Route::post('/medicine-store/quote', [MedicineTransferController::class, 'quote'])->name('medicine-transfers.quote');
+    Route::post('/medicine-store/{transfer}/confirm', [MedicineTransferController::class, 'confirm'])->whereNumber('transfer')->name('medicine-transfers.confirm');
+    Route::post('/medicine-store/{transfer}/return', [MedicineTransferController::class, 'returns'])->whereNumber('transfer')->name('medicine-transfers.return');
 });

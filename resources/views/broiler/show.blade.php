@@ -25,6 +25,7 @@
 <section id="cycle-panel-costs" role="tabpanel" aria-labelledby="cycle-tab-costs" data-cycle-panel="costs" @if($activeTab !== 'costs') hidden @endif>
 <div class="flex flex-col gap-4">
 <div class="flex flex-wrap items-center justify-between gap-3"><h2 class="text-lg font-bold">المصروفات والأدوية</h2><p class="text-sm text-slate-500">إجمالي التكاليف {{ number_format($summary['costs'], 2) }}</p></div>
+<a class="ios-card p-4 font-bold text-ios-blue" href="{{ route('medicine-transfers.index',['cycle'=>$cycle->id]) }}">صرف دواء من المخزن المشترك ←</a>
 @if(!$cycle->closed_on)@include('broiler.expense-form')@endif
 <div class="grid items-start gap-4 lg:grid-cols-2">
 <section class="ios-card p-5" aria-label="مصروفات الدورة"><h3 class="mb-4 font-bold">مصروفات الدورة حسب التصنيف</h3><table class="w-full text-right text-sm"><tbody class="divide-y divide-slate-100"><tr><td class="py-3">كتاكيت @include('broiler.chick-cost-form')</td><td class="py-3 text-left">{{ number_format($cycle->chick_cost, 2) }}</td></tr>
